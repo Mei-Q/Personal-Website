@@ -2,13 +2,13 @@
   "name": "personal-lab-blog",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
-    "predev": "node scripts/generate-static-files.mjs",
     "dev": "next dev",
-    "prebuild": "node scripts/generate-static-files.mjs",
     "build": "next build",
-    "start": "serve out",
-    "preview": "serve out",
+    "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit"
   },
@@ -42,7 +42,6 @@
     "eslint-config-next": "^14.2.23",
     "postcss": "^8.4.49",
     "prettier": "^3.4.2",
-    "serve": "^14.2.4",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.2"
   }

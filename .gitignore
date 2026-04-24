@@ -8,6 +8,3 @@ coverage
 .vercel
 .npm-cache
 gitdata-test
-public/rss.xml
-public/sitemap.xml
-public/robots.txt
