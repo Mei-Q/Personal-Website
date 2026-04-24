@@ -1,0 +1,175 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --background: 247 248 246;
+  --foreground: 23 27 22;
+  --muted: 236 239 235;
+  --muted-foreground: 83 93 78;
+  --border: 215 221 213;
+  --panel: 255 255 253;
+  --panel-strong: 250 251 249;
+  --accent: 15 118 110;
+}
+
+.dark {
+  color-scheme: dark;
+  --background: 18 21 18;
+  --foreground: 238 242 236;
+  --muted: 38 43 36;
+  --muted-foreground: 176 185 171;
+  --border: 70 78 66;
+  --panel: 24 28 23;
+  --panel-strong: 31 36 29;
+  --accent: 45 212 191;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+body {
+  min-height: 100vh;
+  background: rgb(var(--background));
+  color: rgb(var(--foreground));
+  overflow-x: hidden;
+  font-feature-settings:
+    "rlig" 1,
+    "calt" 1;
+  text-rendering: optimizeLegibility;
+}
+
+a {
+  text-underline-offset: 0.22em;
+}
+
+::selection {
+  background: rgba(15, 118, 110, 0.22);
+}
+
+.focus-ring {
+  @apply outline-none ring-2 ring-lab-teal ring-offset-2 ring-offset-[rgb(var(--background))];
+}
+
+.prose {
+  --tw-prose-body: rgb(var(--foreground));
+  --tw-prose-headings: rgb(var(--foreground));
+  --tw-prose-links: rgb(var(--accent));
+  --tw-prose-bold: rgb(var(--foreground));
+  --tw-prose-quotes: rgb(var(--foreground));
+  --tw-prose-quote-borders: rgb(var(--accent));
+  --tw-prose-counters: rgb(var(--muted-foreground));
+  --tw-prose-bullets: rgb(var(--muted-foreground));
+  --tw-prose-hr: rgb(var(--border));
+  --tw-prose-th-borders: rgb(var(--border));
+  --tw-prose-td-borders: rgb(var(--border));
+  max-width: none;
+  overflow-wrap: break-word;
+}
+
+.prose :where(h1, h2, h3, h4, h5, h6):not(:where([class~="not-prose"] *)) {
+  overflow-wrap: anywhere;
+}
+
+.prose :where(pre):not(:where([class~="not-prose"] *)) {
+  border: 1px solid rgb(var(--border));
+  border-radius: 8px;
+  background: rgb(var(--panel-strong));
+  color: rgb(var(--foreground));
+  overflow: auto;
+  max-width: calc(100vw - 2rem);
+}
+
+.prose :where(code):not(:where(pre code)):not(:where([class~="not-prose"] *)) {
+  border-radius: 4px;
+  background: rgb(var(--muted));
+  padding: 0.12rem 0.35rem;
+  color: rgb(var(--foreground));
+  font-weight: 600;
+}
+
+.prose :where(code):not(:where(pre code))::before,
+.prose :where(code):not(:where(pre code))::after {
+  content: "";
+}
+
+.prose :where(blockquote):not(:where([class~="not-prose"] *)) {
+  border-left-width: 3px;
+  border-radius: 0 8px 8px 0;
+  background: rgba(15, 118, 110, 0.06);
+  padding: 0.75rem 1rem;
+  font-style: normal;
+}
+
+.prose :where(table):not(:where([class~="not-prose"] *)) {
+  display: block;
+  overflow: hidden;
+  overflow-x: auto;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.prose :where(img):not(:where([class~="not-prose"] *)) {
+  height: auto;
+  max-width: 100%;
+}
+
+.code-copy-button {
+  position: absolute;
+  right: 0.6rem;
+  top: 0.6rem;
+  z-index: 5;
+  border: 1px solid rgb(var(--border));
+  border-radius: 6px;
+  background: rgb(var(--panel));
+  color: rgb(var(--muted-foreground));
+  padding: 0.22rem 0.5rem;
+  font-size: 0.72rem;
+  line-height: 1rem;
+}
+
+.code-copy-button:hover {
+  color: rgb(var(--foreground));
+}
+
+[data-rehype-pretty-code-figure] {
+  position: relative;
+}
+
+[data-rehype-pretty-code-title] {
+  border: 1px solid rgb(var(--border));
+  border-bottom: 0;
+  border-radius: 8px 8px 0 0;
+  background: rgb(var(--panel));
+  padding: 0.45rem 0.8rem;
+  color: rgb(var(--muted-foreground));
+  font-family: ui-monospace, SFMono-Regular, Consolas, Liberation Mono, monospace;
+  font-size: 0.78rem;
+}
+
+[data-rehype-pretty-code-title] + pre {
+  margin-top: 0 !important;
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+}
+
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-block: 0.5rem;
+  max-width: calc(100vw - 2rem);
+}
+
+@media (max-width: 640px) {
+  .code-copy-button {
+    right: 0.45rem;
+    top: 0.45rem;
+  }
+}

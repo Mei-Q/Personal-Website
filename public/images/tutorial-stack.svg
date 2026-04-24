@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="520" viewBox="0 0 960 520" role="img" aria-label="Tutorial stack">
+  <rect width="960" height="520" fill="#f7f8f6"/>
+  <rect x="94" y="80" width="772" height="96" rx="14" fill="#ffffff" stroke="#d7ddd5"/>
+  <rect x="94" y="212" width="772" height="96" rx="14" fill="#ffffff" stroke="#d7ddd5"/>
+  <rect x="94" y="344" width="772" height="96" rx="14" fill="#ffffff" stroke="#d7ddd5"/>
+  <circle cx="148" cy="128" r="22" fill="#0f766e"/>
+  <circle cx="148" cy="260" r="22" fill="#b45309"/>
+  <circle cx="148" cy="392" r="22" fill="#be123c"/>
+  <path d="M208 116h310M208 146h196M208 248h360M208 278h244M208 380h300M208 410h180" stroke="#171b16" stroke-width="12" stroke-linecap="round"/>
+  <path d="M680 112l44 32 64-72M680 244l44 32 64-72M680 376l44 32 64-72" fill="none" stroke="#4d7c0f" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

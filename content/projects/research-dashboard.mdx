@@ -1,0 +1,33 @@
+---
+title: "Research Dashboard Prototype"
+description: "一个用于跟踪实验运行、论文阅读状态和项目进度的轻量仪表盘原型。"
+date: "2026-03-18"
+status: "进行中"
+techStack: ["React", "TypeScript", "Python", "SQLite"]
+github: "https://github.com/example/research-dashboard"
+demo: ""
+tags: ["科研项目", "实验管理", "Dashboard"]
+categories: ["项目"]
+draft: false
+cover: "/images/research-workbench.svg"
+featured: true
+---
+
+## 项目目标
+
+研究过程中经常同时推进多个方向：论文阅读、实验运行、代码整理和写作任务。这个原型尝试把这些状态放到一个轻量面板中。
+
+## 模块
+
+- 实验运行状态：记录配置、指标和产物路径。
+- 论文阅读状态：标记待读、精读、已复现。
+- 项目任务：用小粒度任务跟踪下一步。
+- 资源索引：收集数据集、工具和参考链接。
+
+## 状态设计
+
+项目状态暂时分为 `进行中`、`已完成`、`维护中` 和 `暂停`。状态字段放在 frontmatter 里，方便列表页直接展示。
+
+## 实验想法
+
+后续可以把 `runs/` 目录中的 JSON 指标自动读取出来，在项目详情页生成曲线和对比表。

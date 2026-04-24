@@ -1,0 +1,60 @@
+---
+title: "科研开发环境配置清单"
+description: "从 Node.js、Python、CUDA、编辑器到实验目录，整理一个新机器上手科研开发的配置顺序。"
+date: "2026-04-05"
+updated: "2026-04-07"
+tags: ["开发环境", "Python", "CUDA", "工具链"]
+categories: ["工具教程"]
+draft: false
+cover: "/images/tutorial-stack.svg"
+---
+
+## 配置目标
+
+环境配置的目标不是“装得越多越好”，而是保证项目能被稳定复现、依赖能被锁定、路径能被迁移。
+
+## 基础清单
+
+- Git：管理代码版本。
+- Node.js：构建前端和文档站点。
+- Python：运行实验脚本和数据处理。
+- Conda 或 uv：管理 Python 环境。
+- VS Code：统一编辑器配置。
+
+## Python 环境
+
+```bash title="python-env.sh"
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -U pip
+python -m pip install numpy pandas matplotlib
+```
+
+Windows PowerShell 可以使用：
+
+```powershell title="python-env.ps1"
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -U pip
+```
+
+## CUDA 与深度学习
+
+深度学习项目建议把 CUDA、驱动、框架版本写进项目 README。版本不明确时，复现实验会非常痛苦。
+
+| Component | Example |
+| --- | --- |
+| NVIDIA Driver | 550+ |
+| CUDA Toolkit | 12.x |
+| PyTorch | 与 CUDA 版本匹配 |
+
+## 项目入口
+
+尽量给每个项目准备一个最小入口：
+
+```bash
+npm run dev
+python scripts/train.py --config configs/baseline.yaml
+```
+
+这样未来重新打开项目时，可以从 README 直接恢复上下文。

@@ -1,0 +1,35 @@
+---
+title: "Personal Lab Knowledge Base"
+description: "基于 Markdown / MDX 的个人科研知识库，用于沉淀论文笔记、项目文档、教程和资源索引。"
+date: "2026-04-25"
+status: "维护中"
+techStack: ["Next.js", "MDX", "Fuse.js", "Tailwind CSS"]
+github: "https://github.com/example/personal-lab"
+demo: ""
+tags: ["知识管理", "开源", "科研项目"]
+categories: ["项目"]
+draft: false
+cover: "/images/project-console.svg"
+featured: true
+---
+
+## 项目简介
+
+这个项目就是当前网站的内容系统原型。目标是用尽量少的后端复杂度，支持个人实验室长期维护公开内容。
+
+## 主要能力
+
+- 使用 Markdown / MDX 管理文章、论文、项目和教程。
+- 使用 frontmatter 管理日期、标签、分类、状态和链接。
+- 通过静态生成部署到 Vercel、Netlify 或 GitHub Pages。
+- 使用 Fuse.js 做本地搜索，不依赖数据库。
+
+## 技术设计
+
+内容读取集中在 `lib/content.ts`，页面层只关心集合类型和展示组件。后续如果要接入 CMS，也可以把数据源替换成远程接口，而不必重写所有页面。
+
+## 下一步
+
+- 增加引用格式导出。
+- 增加 BibTeX 字段。
+- 增加论文图谱或项目依赖图。

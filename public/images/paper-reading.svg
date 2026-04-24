@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="520" viewBox="0 0 960 520" role="img" aria-label="Paper reading">
+  <rect width="960" height="520" fill="#f7f8f6"/>
+  <rect x="70" y="54" width="370" height="412" rx="14" fill="#ffffff" stroke="#d7ddd5"/>
+  <rect x="520" y="54" width="370" height="412" rx="14" fill="#ffffff" stroke="#d7ddd5"/>
+  <path d="M116 114h210M116 150h260M116 210h236M116 246h184M116 282h248M116 358h162" stroke="#171b16" stroke-width="12" stroke-linecap="round"/>
+  <path d="M566 116h160M566 154h226M566 226h256M566 264h180M566 302h224M566 380h120" stroke="#667260" stroke-width="12" stroke-linecap="round"/>
+  <path d="M148 382l84-64 72 44 64-96" fill="none" stroke="#0f766e" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M608 360c60-84 108-84 168 0" fill="none" stroke="#b45309" stroke-width="14" stroke-linecap="round"/>
+  <circle cx="232" cy="318" r="14" fill="#be123c"/>
+  <circle cx="304" cy="362" r="14" fill="#6d28d9"/>
+</svg>

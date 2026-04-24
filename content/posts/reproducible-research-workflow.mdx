@@ -1,0 +1,87 @@
+---
+title: "可复现实验的最小工作流"
+description: "从环境、数据、配置、日志到结果产物，整理一个适合个人实验室长期维护的可复现实验模板。"
+date: "2026-04-20"
+updated: "2026-04-22"
+tags: ["可复现实验", "科研工程", "Python"]
+categories: ["研究笔记"]
+draft: false
+cover: "/images/research-workbench.svg"
+featured: true
+---
+
+## 问题背景
+
+科研实验最怕的是“当时能跑，现在忘了怎么跑”。一个轻量但稳定的工作流，至少要回答四个问题：
+
+1. 代码版本是什么？
+2. 数据和预处理步骤是什么？
+3. 超参数从哪里来？
+4. 结果如何被记录和比较？
+
+<Callout title="实践原则">
+个人项目不一定需要复杂平台，但需要把实验入口、配置文件和结果目录固定下来。
+</Callout>
+
+## 推荐目录
+
+```text title="experiment-layout"
+project/
+  configs/
+    baseline.yaml
+  data/
+    raw/
+    processed/
+  notebooks/
+  src/
+  runs/
+  scripts/
+```
+
+其中 `runs/` 用于保存每次实验的配置快照、日志、指标和图表。只要这个目录结构稳定，后续迁移到服务器、容器或 CI 都会简单很多。
+
+## 配置优先
+
+把实验变量放进配置文件，而不是散落在脚本参数里：
+
+```yaml title="configs/baseline.yaml"
+seed: 42
+dataset:
+  name: demo-set
+  split: train
+model:
+  name: baseline-encoder
+  hidden_size: 256
+training:
+  batch_size: 32
+  learning_rate: 0.0003
+  epochs: 20
+```
+
+## 记录指标
+
+一个很实用的实验分数可以写成：
+
+$$
+score = \alpha \cdot accuracy - \beta \cdot latency
+$$
+
+这类复合指标不一定适合论文最终汇报，但很适合个人实验阶段快速比较方案。
+
+| Run | Accuracy | Latency | Notes |
+| --- | ---: | ---: | --- |
+| baseline-001 | 0.842 | 32ms | 初始配置 |
+| baseline-002 | 0.861 | 38ms | 增大 hidden size |
+| baseline-003 | 0.858 | 30ms | 调整 batch size |
+
+## 最小命令
+
+```bash title="run.sh"
+python scripts/prepare_data.py --config configs/baseline.yaml
+python scripts/train.py --config configs/baseline.yaml --out runs/baseline-001
+python scripts/evaluate.py --run runs/baseline-001
+```
+
+## 小结
+
+对个人实验室而言，最重要的不是一步到位做成平台，而是把可复现的边界固定住：入口统一、配置可追溯、结果可比较、笔记可检索。

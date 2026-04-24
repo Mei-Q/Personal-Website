@@ -1,0 +1,61 @@
+---
+title: "Attention Is All You Need 阅读笔记"
+type: "paper"
+description: "Transformer 论文阅读笔记：核心贡献、方法结构、优缺点与个人评价。"
+authors: ["Ashish Vaswani", "Noam Shazeer", "Niki Parmar", "Jakob Uszkoreit", "Llion Jones", "Aidan N. Gomez", "Lukasz Kaiser", "Illia Polosukhin"]
+venue: "NeurIPS"
+year: 2017
+doi: ""
+arxiv: "https://arxiv.org/abs/1706.03762"
+tags: ["Transformer", "Deep Learning", "LLM"]
+categories: ["论文阅读"]
+draft: false
+cover: "/images/paper-reading.svg"
+featured: true
+---
+
+## 阅读笔记
+
+这篇论文提出了完全基于注意力机制的序列建模架构 Transformer，摆脱了循环网络和卷积结构对序列依赖建模的限制。
+
+## 核心贡献
+
+- 使用 multi-head self-attention 作为主要建模单元。
+- 引入 position encoding 表达 token 顺序。
+- 通过 encoder-decoder 结构在机器翻译任务上取得强结果。
+- 让序列并行计算变得更高效，为大规模语言模型奠定基础。
+
+## 方法概述
+
+Scaled dot-product attention 的核心形式为：
+
+$$
+\mathrm{Attention}(Q, K, V) = \mathrm{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V
+$$
+
+Multi-head attention 将表示空间拆成多个子空间，分别做注意力计算后再拼接：
+
+```python title="attention.py"
+def scaled_dot_product_attention(q, k, v, mask=None):
+    scores = q @ k.transpose(-2, -1) / q.shape[-1] ** 0.5
+    if mask is not None:
+        scores = scores.masked_fill(mask == 0, float("-inf"))
+    weights = scores.softmax(dim=-1)
+    return weights @ v
+```
+
+## 优点
+
+- 并行效率高，适合 GPU 训练。
+- 注意力权重提供一定程度的可解释入口。
+- 架构模块化，后续扩展空间很大。
+
+## 局限
+
+- 原始 self-attention 对序列长度是二次复杂度。
+- 位置编码方式在长上下文泛化上仍需要改进。
+- 大规模训练成本高，对数据和算力敏感。
+
+## 个人评价
+
+这篇论文的价值不仅在于一个模型结构，而在于它改变了序列建模的工程边界。后续大量工作都可以看作是在 Transformer 的表达效率、上下文长度、训练稳定性和工具使用能力上继续扩展。

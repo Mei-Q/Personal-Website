@@ -1,0 +1,55 @@
+---
+title: "用 MDX 写学术长文：公式、代码、表格和引用块"
+description: "介绍如何在本站内容系统里使用 MDX 写论文阅读、教程和实验笔记。"
+date: "2026-03-28"
+tags: ["MDX", "LaTeX", "学术写作"]
+categories: ["工具教程"]
+draft: false
+cover: "/images/tutorial-stack.svg"
+---
+
+## 为什么用 MDX
+
+MDX 保留 Markdown 的低维护成本，同时允许在文章中插入 React 组件。对个人实验室博客而言，它很适合写长文、公式、代码和结构化说明。
+
+## 数学公式
+
+行内公式例如 $E = mc^2$，块级公式例如：
+
+$$
+\mathcal{L}(\theta) = - \sum_{i=1}^{n} y_i \log p_\theta(y_i \mid x_i)
+$$
+
+## 代码块
+
+```ts title="example.ts"
+type PaperNote = {
+  title: string;
+  authors: string[];
+  year: number;
+  tags: string[];
+};
+```
+
+## 表格
+
+| 类型 | 目录 | 用途 |
+| --- | --- | --- |
+| 文章 | `content/posts` | 研究笔记、经验总结 |
+| 论文 | `content/papers` | 论文阅读和引用信息 |
+| 项目 | `content/projects` | 开源项目和实验系统 |
+| 教程 | `content/tutorials` | 软件教程和工具链 |
+
+## 图片
+
+Markdown 图片会自动映射为 Next.js `Image` 组件，可以放在 `public/images` 目录下再通过站内路径引用：
+
+![研究工作台示意图](/images/research-workbench.svg)
+
+## 组件
+
+可以使用内置的 `Callout` 组件突出重要信息：
+
+<Callout title="写作建议">
+先写结论，再补证据。学术长文最容易失控的是细节堆叠，结构先行会让后续维护轻松很多。
+</Callout>

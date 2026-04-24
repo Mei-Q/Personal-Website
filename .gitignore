@@ -1,0 +1,13 @@
+node_modules
+.next
+out
+.env*.local
+*.log
+dist
+coverage
+.vercel
+.npm-cache
+gitdata-test
+public/rss.xml
+public/sitemap.xml
+public/robots.txt
