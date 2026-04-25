@@ -1,9 +1,9 @@
-import fs from "node:fs";
+﻿import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
 import GithubSlugger from "github-slugger";
 import { siteConfig } from "@/site.config";
-import type { ArchiveGroup, Collection, ContentItem, Heading, SearchItem } from "@/lib/types";
+import type { ArchiveGroup, Attachment, Collection, ContentItem, Heading, SearchItem } from "@/lib/types";
 import {
   absoluteUrl,
   byDateDesc,
@@ -16,6 +16,9 @@ import {
 export const collections: Collection[] = ["posts", "papers", "projects", "tutorials"];
 
 const contentRoot = path.join(process.cwd(), "content");
+const publicRoot = path.join(process.cwd(), "public");
+const fileRoot = path.join(publicRoot, "files");
+const documentFilePattern = /\.(pdf|docx?|pptx?|xlsx?|csv|zip|rar|7z|txt)$/i;
 
 const collectionTypeMap: Record<Collection, ContentItem["type"]> = {
   posts: "post",
@@ -32,7 +35,11 @@ function getCollectionDir(collection: Collection) {
   return path.join(contentRoot, collection);
 }
 
-function getMdxFiles(collection: Collection) {
+function getFileCollectionDir(collection: Collection) {
+  return path.join(fileRoot, collection);
+}
+
+function getMarkdownFiles(collection: Collection) {
   const directory = getCollectionDir(collection);
   if (!fs.existsSync(directory)) return [];
 
@@ -42,8 +49,39 @@ function getMdxFiles(collection: Collection) {
     .map((file) => path.join(directory, file));
 }
 
+function getDocumentFiles(collection: Collection) {
+  const directory = getFileCollectionDir(collection);
+  if (!fs.existsSync(directory)) return [];
+
+  return fs
+    .readdirSync(directory, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && documentFilePattern.test(entry.name))
+    .map((entry) => path.join(directory, entry.name));
+}
+
 function slugFromFile(filePath: string) {
   return path.basename(filePath).replace(/\.(md|mdx)$/i, "");
+}
+
+function slugFromDocumentFile(filePath: string) {
+  const name = path.basename(filePath, path.extname(filePath));
+  return (
+    name
+      .trim()
+      .toLowerCase()
+      .replace(/[\s_]+/g, "-")
+      .replace(/[^a-z0-9\u3400-\u9fff-]/gi, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "") || "download"
+  );
+}
+
+function titleFromDocumentFile(filePath: string) {
+  return path
+    .basename(filePath, path.extname(filePath))
+    .replace(/[-_]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function stripMarkdown(content: string) {
@@ -107,7 +145,64 @@ function normalizeStringArray(value: unknown): string[] {
   return [String(value)];
 }
 
-function normalizeItem(collection: Collection, filePath: string): ContentItem {
+function inferAttachmentType(href: string) {
+  const extension = href.split(/[?#]/)[0]?.split(".").pop();
+  return extension ? extension.toUpperCase() : undefined;
+}
+
+function attachmentLabelFromHref(href: string) {
+  return decodeURIComponent(href.split(/[?#]/)[0]?.split("/").pop() ?? href);
+}
+
+function formatFileSize(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+}
+
+function normalizeAttachments(value: unknown): ContentItem["attachments"] {
+  if (!value) return [];
+
+  const entries = Array.isArray(value) ? value : [value];
+  return entries
+    .map((entry): Attachment | null => {
+      if (typeof entry === "string") {
+        return {
+          label: attachmentLabelFromHref(entry),
+          href: entry,
+          type: inferAttachmentType(entry)
+        };
+      }
+
+      if (!entry || typeof entry !== "object") return null;
+      const data = entry as Record<string, unknown>;
+      const href = data.href ?? data.url;
+      if (!href) return null;
+
+      const normalizedHref = String(href);
+      return {
+        label: String(data.label ?? data.title ?? attachmentLabelFromHref(normalizedHref)),
+        href: normalizedHref,
+        type: data.type ? String(data.type) : inferAttachmentType(normalizedHref),
+        size: data.size ? String(data.size) : undefined,
+        description: data.description ? String(data.description) : undefined
+      };
+    })
+    .filter((attachment): attachment is Attachment => Boolean(attachment));
+}
+
+function readDocumentMetadata(filePath: string) {
+  const metadataPath = filePath.replace(path.extname(filePath), ".json");
+  if (!fs.existsSync(metadataPath)) return {} as Record<string, unknown>;
+
+  try {
+    return JSON.parse(fs.readFileSync(metadataPath, "utf8")) as Record<string, unknown>;
+  } catch {
+    return {} as Record<string, unknown>;
+  }
+}
+
+function normalizeMarkdownItem(collection: Collection, filePath: string): ContentItem {
   const raw = fs.readFileSync(filePath, "utf8");
   const parsed = matter(raw);
   const data = parsed.data;
@@ -142,13 +237,81 @@ function normalizeItem(collection: Collection, filePath: string): ContentItem {
     status: data.status ? String(data.status) : undefined,
     techStack: normalizeStringArray(data.techStack),
     github: data.github ? String(data.github) : undefined,
-    demo: data.demo ? String(data.demo) : undefined
+    demo: data.demo ? String(data.demo) : undefined,
+    attachments: normalizeAttachments(data.attachments ?? data.downloads)
+  };
+}
+
+function normalizeDocumentItem(collection: Collection, filePath: string): ContentItem {
+  const data = readDocumentMetadata(filePath);
+  const stat = fs.statSync(filePath);
+  const href = `/${path.relative(publicRoot, filePath).replace(/\\/g, "/")}`;
+  const fileType = inferAttachmentType(href) ?? "FILE";
+  const slug = data.slug ? String(data.slug) : slugFromDocumentFile(filePath);
+  const title = String(data.title ?? titleFromDocumentFile(filePath));
+  const description = String(data.description ?? `${title} 的 ${fileType} 下载文件。`);
+  const body = data.body ? String(data.body).trim() : "";
+  const stats = body ? estimateReadingTime(body) : { text: "文件下载", minutes: 1 };
+  const primaryAttachment = {
+    label: String(data.downloadLabel ?? `${title}.${fileType.toLowerCase()}`),
+    href,
+    type: fileType,
+    size: formatFileSize(stat.size),
+    description: data.downloadDescription ? String(data.downloadDescription) : undefined
+  };
+
+  return {
+    slug,
+    collection,
+    type: (data.type as ContentItem["type"] | undefined) ?? collectionTypeMap[collection],
+    title,
+    description,
+    date: data.date ? String(data.date) : undefined,
+    updated: data.updated ? String(data.updated) : undefined,
+    tags: normalizeStringArray(data.tags),
+    categories: normalizeStringArray(data.categories),
+    draft: Boolean(data.draft),
+    cover: data.cover ? String(data.cover) : undefined,
+    body,
+    plainText: stripMarkdown([title, description, body].filter(Boolean).join("\n")),
+    readingTime: stats.text,
+    readingMinutes: stats.minutes,
+    headings: extractHeadings(body),
+    featured: Boolean(data.featured),
+    language: data.language ? String(data.language) : undefined,
+    authors: normalizeStringArray(data.authors),
+    venue: data.venue ? String(data.venue) : undefined,
+    year: data.year ? Number(data.year) : undefined,
+    doi: data.doi ? String(data.doi) : undefined,
+    arxiv: data.arxiv ? String(data.arxiv) : undefined,
+    status: data.status ? String(data.status) : undefined,
+    techStack: normalizeStringArray(data.techStack),
+    github: data.github ? String(data.github) : undefined,
+    demo: data.demo ? String(data.demo) : undefined,
+    attachments: [primaryAttachment, ...normalizeAttachments(data.attachments ?? data.downloads)]
   };
 }
 
 export function getCollection(collection: Collection) {
-  return getMdxFiles(collection)
-    .map((filePath) => normalizeItem(collection, filePath))
+  const markdownItems = getMarkdownFiles(collection).map((filePath) =>
+    normalizeMarkdownItem(collection, filePath)
+  );
+  const markdownSlugs = new Set(markdownItems.map((item) => item.slug));
+  const documentItemsBySlug = new Map<string, ContentItem>();
+
+  for (const filePath of getDocumentFiles(collection)) {
+    const item = normalizeDocumentItem(collection, filePath);
+    if (markdownSlugs.has(item.slug)) continue;
+
+    const existing = documentItemsBySlug.get(item.slug);
+    if (existing) {
+      existing.attachments.push(...item.attachments);
+    } else {
+      documentItemsBySlug.set(item.slug, item);
+    }
+  }
+
+  return [...markdownItems, ...Array.from(documentItemsBySlug.values())]
     .filter((item) => canShowDraft(item.draft))
     .sort(byDateDesc);
 }
@@ -302,3 +465,5 @@ export function getAllStaticPaths() {
 
   return [...staticEntries, ...contentEntries];
 }
+
+

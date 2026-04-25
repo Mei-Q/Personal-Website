@@ -1,4 +1,4 @@
-import { ExternalLink, Github, CalendarDays, Clock3, RefreshCw } from "lucide-react";
+﻿import { CalendarDays, Clock3, Download, ExternalLink, FileText, Github, RefreshCw } from "lucide-react";
 import type { ContentItem } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { BackToTop } from "@/components/blog/back-to-top";
@@ -8,7 +8,7 @@ import { ProgressBar } from "@/components/blog/progress-bar";
 import { RelatedContent } from "@/components/blog/related-content";
 import { TableOfContents } from "@/components/blog/table-of-contents";
 import { MdxRenderer } from "@/components/mdx/mdx-renderer";
-import { formatDate, typeLabel } from "@/lib/utils";
+import { formatDate, typeLabel, withBasePath } from "@/lib/utils";
 
 type ContentDetailProps = {
   item: ContentItem;
@@ -108,6 +108,55 @@ function MetadataPanel({ item }: { item: ContentItem }) {
   return null;
 }
 
+function DownloadPanel({ item }: { item: ContentItem }) {
+  if (!item.attachments.length) return null;
+
+  return (
+    <div className="rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--panel))] p-5">
+      <h2 className="text-sm font-semibold">下载资料</h2>
+      <div className="mt-4 space-y-3">
+        {item.attachments.map((attachment) => {
+          const isExternal = attachment.href.startsWith("http");
+          const href = isExternal ? attachment.href : withBasePath(attachment.href);
+
+          return (
+            <a
+              key={`${attachment.href}-${attachment.label}`}
+              href={href}
+              target={isExternal ? "_blank" : undefined}
+              rel={isExternal ? "noreferrer" : undefined}
+              download={isExternal ? undefined : true}
+              className="group flex gap-3 rounded-md border border-[rgb(var(--border))] p-3 text-sm transition hover:border-lab-teal hover:bg-[rgb(var(--background))]"
+            >
+              <FileText className="mt-0.5 h-4 w-4 shrink-0 text-lab-teal" />
+              <span className="min-w-0 flex-1">
+                <span className="flex items-start justify-between gap-2 font-medium">
+                  <span className="break-words">{attachment.label}</span>
+                  {isExternal ? (
+                    <ExternalLink className="mt-0.5 h-3.5 w-3.5 shrink-0 opacity-60" />
+                  ) : (
+                    <Download className="mt-0.5 h-3.5 w-3.5 shrink-0 opacity-70" />
+                  )}
+                </span>
+                {attachment.type || attachment.size ? (
+                  <span className="mt-1 block text-xs text-[rgb(var(--muted-foreground))]">
+                    {[attachment.type, attachment.size].filter(Boolean).join(" · ")}
+                  </span>
+                ) : null}
+                {attachment.description ? (
+                  <span className="mt-1 block text-xs leading-5 text-[rgb(var(--muted-foreground))]">
+                    {attachment.description}
+                  </span>
+                ) : null}
+              </span>
+            </a>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export function ContentDetail({ item, previous, next }: ContentDetailProps) {
   return (
     <>
@@ -164,13 +213,20 @@ export function ContentDetail({ item, previous, next }: ContentDetailProps) {
 
           <div className="mt-8 grid min-w-0 gap-8 lg:mt-10 lg:grid-cols-[minmax(0,1fr)_18rem]">
             <div className="min-w-0">
-              <div className="prose prose-neutral max-w-none dark:prose-invert sm:prose-lg prose-headings:scroll-mt-24 prose-headings:tracking-normal prose-p:leading-8 prose-a:no-underline prose-pre:text-sm hover:prose-a:underline">
-                <MdxRenderer source={item.body} />
-              </div>
+              {item.body ? (
+                <div className="prose prose-neutral max-w-none dark:prose-invert sm:prose-lg prose-headings:scroll-mt-24 prose-headings:tracking-normal prose-p:leading-8 prose-a:no-underline prose-pre:text-sm hover:prose-a:underline">
+                  <MdxRenderer source={item.body} />
+                </div>
+              ) : (
+                <div className="rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--panel))] p-6 text-sm leading-7 text-[rgb(var(--muted-foreground))]">
+                  这条内容以文件形式发布。请使用下载资料中的链接获取 PDF、DOCX 或其他附件。
+                </div>
+              )}
               <PrevNext previous={previous} next={next} />
             </div>
             <aside className="order-first space-y-5 lg:order-none lg:sticky lg:top-28 lg:self-start">
               <MetadataPanel item={item} />
+              <DownloadPanel item={item} />
               <TableOfContents headings={item.headings} />
             </aside>
           </div>
@@ -187,3 +243,8 @@ export function ContentDetail({ item, previous, next }: ContentDetailProps) {
     </>
   );
 }
+
+
+
+
+

@@ -33,6 +33,7 @@ D:\Sweet_Lemon\Desktop\Personal website
 | `content/projects` | 科研项目、开源项目、实验项目 |
 | `content/tutorials` | 软件教程、环境配置、网站维护说明 |
 | `public/images` | 网站头像、封面图、文章插图、项目截图 |
+| `public/files` | PDF、DOCX、ZIP、数据文件等下载资料 |
 | `README.md` | 项目安装、开发和部署说明 |
 
 ## 修改网站基本信息
@@ -99,6 +100,148 @@ cover: "/images/lab-cover.jpg"
 
 不要写成 `public/images/lab-cover.jpg`，网页访问时应该从 `/images/...` 开始。
 
+## 上传 PDF / DOCX 作为独立内容
+
+除了 `.md` 和 `.mdx`，本站也支持把 PDF、DOC、DOCX、PPTX、XLSX、CSV、ZIP 等文件作为独立内容发布。
+
+推荐放置目录：
+
+| 内容类型 | 文件目录 | 示例链接 |
+| --- | --- | --- |
+| 文章附件或 PDF 文章 | `public/files/posts` | `/posts/my-paper-note` |
+| 论文原文或阅读资料 | `public/files/papers` | `/papers/transformer-reading` |
+| 项目报告或压缩包 | `public/files/projects` | `/projects/research-dashboard` |
+| 教程讲义或 Word 文档 | `public/files/tutorials` | `/tutorials/python-env-guide` |
+
+例如你上传：
+
+```text
+public/files/tutorials/python-env-guide.pdf
+```
+
+网站会自动生成一个教程条目：
+
+```text
+/tutorials/python-env-guide
+```
+
+详情页会显示下载按钮。PDF 可以在浏览器里打开或下载，DOCX 通常会直接下载到本地。
+
+### 给 PDF / DOCX 补充标题和标签
+
+如果只上传文件，网站会用文件名生成标题。若想补充摘要、日期、标签、分类，可以在同一目录放一个同名 `.json` 文件。
+
+例如：
+
+```text
+public/files/tutorials/python-env-guide.pdf
+public/files/tutorials/python-env-guide.json
+```
+
+`python-env-guide.json` 可以这样写：
+
+```json
+{
+  "title": "Python 科研环境配置讲义",
+  "description": "一份可下载的 PDF 教程，整理 Python 虚拟环境、依赖管理和实验目录规范。",
+  "date": "2026-04-25",
+  "updated": "2026-04-25",
+  "tags": ["Python", "开发环境", "PDF"],
+  "categories": ["工具教程"],
+  "draft": false,
+  "downloadDescription": "适合离线阅读和打印的 PDF 版本。"
+}
+```
+
+如果是论文资料，也可以补充作者、年份、会议等字段：
+
+```json
+{
+  "title": "Attention Is All You Need 阅读资料",
+  "description": "Transformer 论文原文和阅读材料下载。",
+  "authors": ["Ashish Vaswani", "Noam Shazeer"],
+  "venue": "NeurIPS",
+  "year": 2017,
+  "tags": ["Transformer", "Deep Learning"],
+  "categories": ["论文阅读"],
+  "draft": false
+}
+```
+
+### 支持的文件格式
+
+当前自动识别这些文件作为可下载内容：
+
+```text
+.pdf, .doc, .docx, .pptx, .xls, .xlsx, .csv, .zip, .rar, .7z, .txt
+```
+
+建议文件名使用英文小写和连字符，例如：
+
+```text
+python-env-guide.pdf
+research-report-2026.docx
+experiment-data.zip
+```
+
+这样生成的网址更稳定，也更适合分享。
+
+## 给已有文章添加下载附件
+
+如果一篇内容仍然使用 Markdown 编写，但你想额外提供 PDF、DOCX、代码压缩包或数据文件下载，可以在 frontmatter 中添加 `downloads` 字段。
+
+示例：
+
+```yaml
+downloads:
+  - label: "PDF 版本"
+    href: "/files/posts/my-research-note.pdf"
+    type: "PDF"
+    size: "1.2 MB"
+    description: "适合离线阅读和打印的版本。"
+  - label: "Word 模板"
+    href: "/files/tutorials/research-template.docx"
+    type: "DOCX"
+    description: "可直接编辑的笔记模板。"
+```
+
+完整示例：
+
+```md
+---
+title: "文章标题"
+description: "这里写文章摘要。"
+date: "2026-04-25"
+tags: ["科研", "教程"]
+categories: ["研究笔记"]
+draft: false
+downloads:
+  - label: "下载 PDF"
+    href: "/files/posts/article.pdf"
+    type: "PDF"
+  - label: "下载 DOCX"
+    href: "/files/posts/article.docx"
+    type: "DOCX"
+---
+
+## 正文
+
+这里写网页正文，右侧会自动出现下载资料面板。
+```
+
+也可以使用 `attachments` 字段，效果和 `downloads` 相同。
+
+## 在正文中直接放下载链接
+
+如果只想在正文某个位置放下载链接，可以这样写：
+
+```md
+[下载 PDF 讲义](/files/tutorials/python-env-guide.pdf)
+
+[下载 Word 模板](/files/tutorials/research-template.docx)
+```
+
+网站会自动处理 GitHub Pages 镜像路径，本地文件链接也会按下载文件处理。
 ## 新增普通文章
 
 普通文章放在：
@@ -514,7 +657,7 @@ git --git-dir=gitdata-test --work-tree=. push origin main
 cd "D:\Sweet_Lemon\Desktop\Personal website"
 
 # 1. 修改或新增 Markdown 内容
-# 2. 把图片放入 public/images
+# 2. 把图片放入 public/images，PDF/DOCX 等文件放入 public/files
 # 3. 本地预览
 E:\node\npm.cmd run dev
 
@@ -526,3 +669,5 @@ git --git-dir=gitdata-test --work-tree=. push origin main
 ```
 
 这样就可以完成一次内容更新。
+
+

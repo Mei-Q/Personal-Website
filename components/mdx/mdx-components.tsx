@@ -1,4 +1,4 @@
-import type { MDXComponents } from "mdx/types";
+﻿import type { MDXComponents } from "mdx/types";
 import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -22,16 +22,30 @@ function Callout({ title = "Note", children }: CalloutProps) {
   );
 }
 
+const downloadableFilePattern = /\.(pdf|docx?|xlsx?|pptx?|zip|rar|7z|csv|json|txt)$/i;
+
 export const mdxComponents: MDXComponents = {
   a: ({ href = "", children, ...props }) => {
     const isExternal = href.startsWith("http");
-    if (isExternal) {
+    const pathWithoutQuery = href.split(/[?#]/)[0] ?? "";
+    const isStaticDownload =
+      href.startsWith("/files/") || downloadableFilePattern.test(pathWithoutQuery);
+
+    if (isExternal || !href.startsWith("/") || isStaticDownload) {
+      const resolvedHref = href.startsWith("/") ? withBasePath(href) : href;
       return (
-        <a href={href} target="_blank" rel="noreferrer" {...props}>
+        <a
+          href={resolvedHref}
+          target={isExternal ? "_blank" : undefined}
+          rel={isExternal ? "noreferrer" : undefined}
+          download={!isExternal && isStaticDownload ? true : undefined}
+          {...props}
+        >
           {children}
         </a>
       );
     }
+
     return (
       <Link href={href} {...props}>
         {children}
@@ -52,3 +66,4 @@ export const mdxComponents: MDXComponents = {
   },
   Callout
 };
+

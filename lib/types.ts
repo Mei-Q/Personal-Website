@@ -1,9 +1,17 @@
-export type Collection = "posts" | "papers" | "projects" | "tutorials";
+﻿export type Collection = "posts" | "papers" | "projects" | "tutorials";
 
 export type Heading = {
   id: string;
   text: string;
   level: number;
+};
+
+export type Attachment = {
+  label: string;
+  href: string;
+  type?: string;
+  size?: string;
+  description?: string;
 };
 
 export type ContentItem = {
@@ -34,6 +42,7 @@ export type ContentItem = {
   techStack?: string[];
   github?: string;
   demo?: string;
+  attachments: Attachment[];
 };
 
 export type SearchItem = Pick<
@@ -60,3 +69,4 @@ export type ArchiveGroup = {
     items: ContentItem[];
   }[];
 };
+
