@@ -2,7 +2,7 @@ import { FlaskConical, Github, GraduationCap, Mail, Newspaper, Rss } from "lucid
 
 export const siteConfig = {
   name: "Sweet Lemon Research Lab",
-  shortName: "M Lab",
+  shortName: "M",
   description:
     "一个用于科研记录、论文阅读、项目展示、项目开源与资料分享的个人网站。",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com",
@@ -12,8 +12,8 @@ export const siteConfig = {
     title: "Student",
     affiliation: "ECUT",
     email: "2584368372@qq.com",
-    location: "China",
-    avatar: "/images/avatar.jpg",
+    location: "江西",
+    avatar: "/images/avatar.jpg",/*头像*/
     bio: "个人简介",
     links: [
       {
@@ -21,26 +21,31 @@ export const siteConfig = {
         href: "https://github.com/Mei-Q",
         icon: Github
       },
+      
       {
-        label: "Google Scholar",
-        href: "https://scholar.google.com",
+        label: "School",
+        href: "https://www.ecut.edu.cn/main.htm",
         icon: GraduationCap
       },
+      /*
       {
         label: "ORCID",
         href: "https://orcid.org",
         icon: FlaskConical
       },
+      */
       {
         label: "Email",
         href: "2584368372@qq.com",
         icon: Mail
       },
+      
       {
         label: "RSS",
         href: "/rss.xml",
         icon: Rss
       }
+      
     ]
   },
   nav: [
@@ -55,19 +60,19 @@ export const siteConfig = {
   ],
   researchInterests: [
     {
-      title: "智能系统与 LLM 应用",
-      description: "围绕检索增强生成、工具调用、智能体工作流与评测体系做工程化研究。",
-      accent: "teal"
+      title: "地质三维可视化",
+      description: "地质体的三维可视化技术",
+      accent: "teal"/*蓝绿色*/
     },
     {
       title: "科研软件与可复现实验",
       description: "整理实验环境、数据流水线、仿真工具和结果复现的长期实践。",
-      accent: "amber"
+      accent: "amber"/*琥珀色*/
     },
     {
       title: "知识管理与学术写作",
       description: "用 Markdown / MDX、引用管理和自动化工具沉淀阅读笔记、教程和资源索引。",
-      accent: "rose"
+      accent: "rose"/*玫瑰色*/
     }
   ],
   updates: [
