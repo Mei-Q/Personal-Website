@@ -1,4 +1,4 @@
-﻿# Sweet Lemon Research Lab
+# Sweet Lemon Research Lab
 
 一个面向科研、学术研究、论文阅读、项目展示和资料分享的个人实验室主页。项目基于 Next.js App Router、TypeScript、Tailwind CSS 和 MDX，内容通过本地 Markdown / MDX 文件与静态下载文件维护，不依赖数据库。
 

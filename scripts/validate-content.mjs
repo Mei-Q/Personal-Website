@@ -1,4 +1,4 @@
-﻿import fs from "node:fs";
+import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import matter from "gray-matter";
@@ -13,6 +13,31 @@ const documentFilePattern = /\.(pdf|docx?|pptx?|xlsx?|csv|zip|rar|7z|txt)$/i;
 const errors = [];
 const warnings = [];
 
+const noBomFiles = [
+  "package.json",
+  "package-lock.json",
+  "next.config.mjs",
+  "site.config.ts",
+  "tsconfig.json",
+  "vercel.json",
+  ".github/workflows/ci.yml",
+  ".github/workflows/deploy-github-pages.yml"
+];
+
+function hasUtf8Bom(filePath) {
+  if (!fs.existsSync(filePath)) return false;
+  const bytes = fs.readFileSync(filePath);
+  return bytes.length >= 3 && bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf;
+}
+
+function validateNoBomFiles() {
+  for (const file of noBomFiles) {
+    const filePath = path.join(root, file);
+    if (hasUtf8Bom(filePath)) {
+      pushIssue(errors, filePath, "file starts with UTF-8 BOM; save it as UTF-8 without BOM.");
+    }
+  }
+}
 function exists(filePath) {
   return fs.existsSync(filePath);
 }
@@ -175,6 +200,8 @@ function validateCollection(collection) {
     }
   }
 }
+
+validateNoBomFiles();
 
 for (const collection of collections) {
   validateCollection(collection);

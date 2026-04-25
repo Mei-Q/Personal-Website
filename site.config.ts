@@ -1,4 +1,4 @@
-﻿import { Github, GraduationCap, Mail, Newspaper, Rss } from "lucide-react";
+import { Github, GraduationCap, Mail, Newspaper, Rss } from "lucide-react";
 
 export const siteConfig = {
   name: "Sweet Lemon Research Lab",
