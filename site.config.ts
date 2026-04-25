@@ -1,8 +1,8 @@
-import { FlaskConical, Github, GraduationCap, Mail, Newspaper, Rss } from "lucide-react";
+﻿import { Github, GraduationCap, Mail, Newspaper, Rss } from "lucide-react";
 
 export const siteConfig = {
   name: "Sweet Lemon Research Lab",
-  shortName: "M",
+  shortName: "Sweet Lemon Lab",
   description:
     "一个用于科研记录、论文阅读、项目展示、项目开源与资料分享的个人网站。",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com",
@@ -36,7 +36,7 @@ export const siteConfig = {
       */
       {
         label: "Email",
-        href: "2584368372@qq.com",
+        href: "mailto:2584368372@qq.com",
         icon: Mail
       },
       
@@ -107,3 +107,4 @@ export const siteConfig = {
 };
 
 export type SiteConfig = typeof siteConfig;
+

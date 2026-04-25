@@ -1,4 +1,4 @@
-{
+﻿{
   "name": "personal-lab-blog",
   "version": "0.1.0",
   "private": true,
@@ -10,7 +10,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "validate:content": "node scripts/validate-content.mjs"
   },
   "dependencies": {
     "@mdx-js/mdx": "^3.1.0",
@@ -46,3 +47,4 @@
     "typescript": "^5.7.2"
   }
 }
+

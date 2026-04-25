@@ -562,6 +562,23 @@ http://localhost:3000
 
 修改 Markdown 文件后，一般刷新页面就能看到变化。
 
+## 发布前内容校验
+
+在正式推送前，建议先运行内容校验脚本：
+
+```powershell
+cd "D:\Sweet_Lemon\Desktop\Personal website"
+E:\node\npm.cmd run validate:content
+```
+
+这个脚本会检查：
+
+- Markdown / MDX frontmatter 是否能正常解析。
+- `title`、`description`、`tags`、`categories`、`draft` 等字段类型是否合理。
+- `downloads` / `attachments` 里引用的本地文件是否真实存在。
+- `public/files` 下的 PDF / DOCX 同名 `.json` 元数据是否是合法 JSON。
+
+如果出现 `Error`，需要先修复再推送；如果只是 `Warning`，通常不影响构建，但建议尽量补齐说明信息。
 ## 发布到线上网站
 
 确认内容没问题后，把修改提交到 GitHub：
@@ -661,7 +678,9 @@ cd "D:\Sweet_Lemon\Desktop\Personal website"
 # 3. 本地预览
 E:\node\npm.cmd run dev
 
-# 4. 另开一个 PowerShell 窗口提交并推送
+# 4. 另开一个 PowerShell 窗口检查内容并提交推送
+E:\node\npm.cmd run validate:content
+
 git --git-dir=gitdata-test --work-tree=. status --short
 git --git-dir=gitdata-test --work-tree=. add .
 git --git-dir=gitdata-test --work-tree=. commit -m "Update site content"
@@ -669,5 +688,7 @@ git --git-dir=gitdata-test --work-tree=. push origin main
 ```
 
 这样就可以完成一次内容更新。
+
+
 
 
