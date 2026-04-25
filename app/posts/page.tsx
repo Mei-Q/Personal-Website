@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { CollectionPage } from "@/components/blog/collection-page";
-import type { SearchParams } from "@/lib/filters";
 import { createMetadata, pageDescription } from "@/lib/seo";
 
 export const metadata: Metadata = createMetadata({
@@ -9,18 +8,13 @@ export const metadata: Metadata = createMetadata({
   path: "/posts"
 });
 
-export default function PostsPage({
-  searchParams
-}: {
-  searchParams?: SearchParams;
-}) {
+export default function PostsPage() {
   return (
     <CollectionPage
       collection="posts"
       eyebrow="Posts"
       title="研究文章"
       description="记录科研想法、实验过程、技术总结和长期学习笔记。"
-      searchParams={searchParams}
     />
   );
 }

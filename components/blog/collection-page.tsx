@@ -1,42 +1,46 @@
+import { Suspense } from "react";
 import type { Collection } from "@/lib/types";
+import { CollectionBrowser } from "@/components/blog/collection-browser";
 import { ContentFilters } from "@/components/blog/content-filters";
 import { ContentList } from "@/components/blog/content-list";
 import { Container } from "@/components/layout/container";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { getCollection } from "@/lib/content";
-import { getContentFilterState, type SearchParams } from "@/lib/filters";
+import { getContentFilterState } from "@/lib/filters";
 
 type CollectionPageProps = {
   collection: Collection;
   eyebrow: string;
   title: string;
   description: string;
-  searchParams?: SearchParams;
 };
 
 export function CollectionPage({
   collection,
   eyebrow,
   title,
-  description,
-  searchParams
+  description
 }: CollectionPageProps) {
   const allItems = getCollection(collection);
-  const filtered = getContentFilterState(allItems, searchParams);
+  const fallback = getContentFilterState(allItems);
 
   return (
     <Container className="py-8 sm:py-10">
       <SectionHeading eyebrow={eyebrow} title={title} description={description} />
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-8">
-        <ContentList items={filtered.items} />
-        <ContentFilters
-          basePath={`/${collection}`}
-          tags={filtered.tags}
-          categories={filtered.categories}
-          activeTag={filtered.tag}
-          activeCategory={filtered.category}
-        />
-      </div>
+      <Suspense
+        fallback={
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-8">
+            <ContentList items={fallback.items} />
+            <ContentFilters
+              basePath={`/${collection}`}
+              tags={fallback.tags}
+              categories={fallback.categories}
+            />
+          </div>
+        }
+      >
+        <CollectionBrowser collection={collection} items={allItems} />
+      </Suspense>
     </Container>
   );
 }
