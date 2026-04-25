@@ -128,7 +128,7 @@ Vercel 是推荐主站部署方式。
 7. 添加环境变量：
 
 ```text
-NEXT_PUBLIC_SITE_URL=https://personal-website-kappa-gules-63.vercel.app
+NEXT_PUBLIC_SITE_URL=https://personal-website-sweetlemon.vercel.app
 ```
 
 部署完成后检查：

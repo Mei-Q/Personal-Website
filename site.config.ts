@@ -1,24 +1,24 @@
 import { FlaskConical, Github, GraduationCap, Mail, Newspaper, Rss } from "lucide-react";
 
 export const siteConfig = {
-  name: "Lemon Research Lab",
-  shortName: "Lemon Lab",
+  name: "Sweet Lemon Research Lab",
+  shortName: "M Lab",
   description:
-    "一个用于科研记录、论文阅读、项目展示与资料分享的个人实验室主页。",
+    "一个用于科研记录、论文阅读、项目展示、项目开源与资料分享的个人网站。",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com",
   locale: "zh-CN",
   author: {
     name: "Sweet Lemon",
-    title: "Researcher / Full-stack Developer",
-    affiliation: "Personal Research Lab",
-    email: "hello@example.com",
+    title: "Student",
+    affiliation: "ECUT",
+    email: "2584368372@qq.com",
     location: "China",
-    avatar: "/images/avatar.svg",
-    bio: "关注智能系统、工程工具链、可复现实验和知识管理，长期维护个人研究笔记与开源实验项目。",
+    avatar: "/images/avatar.jpg",
+    bio: "个人简介",
     links: [
       {
         label: "GitHub",
-        href: "https://github.com/example",
+        href: "https://github.com/Mei-Q",
         icon: Github
       },
       {
@@ -33,7 +33,7 @@ export const siteConfig = {
       },
       {
         label: "Email",
-        href: "mailto:hello@example.com",
+        href: "2584368372@qq.com",
         icon: Mail
       },
       {
