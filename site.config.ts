@@ -133,13 +133,7 @@ export const siteConfig = {
     umamiScriptUrl: "https://cloud.umami.is/script.js",
     plausibleDomain: ""
   },
-  comments: {
-    giscusRepo: "",
-    giscusRepoId: "",
-    giscusCategory: "",
-    giscusCategoryId: ""
-  },
-  socialImage: "/images/og.svg",
+  socialImage: "/og/site.svg",
   icon: Newspaper
 };
 

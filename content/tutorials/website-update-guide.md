@@ -13,7 +13,7 @@ cover: "/images/tutorial-stack.svg"
 
 这份指南用于记录本站的日常更新流程。以后想修改个人资料、研究方向、文章内容、论文阅读笔记、项目展示、教程页面或网站图片时，可以直接按这里的步骤操作。
 
-本站内容主要通过 Markdown 文件维护，不需要数据库。只要把内容文件放到对应目录，再推送到 GitHub，Vercel 主站和 GitHub Pages 镜像站就会自动重新部署。
+本站内容主要通过 Markdown / MDX 文件维护，也支持把 PDF、DOCX 和常见资料文件放入 `public/files` 作为可下载内容。不需要数据库；只要把内容文件放到对应目录，再推送到 GitHub，Vercel 主站和 GitHub Pages 镜像站就会自动重新部署。
 
 ## 项目目录
 
@@ -173,7 +173,7 @@ public/files/tutorials/python-env-guide.json
 当前自动识别这些文件作为可下载内容：
 
 ```text
-.pdf, .doc, .docx, .pptx, .xls, .xlsx, .csv, .zip, .rar, .7z, .txt
+.pdf, .doc, .docx, .ppt, .pptx, .xls, .xlsx, .csv, .zip, .rar, .7z, .txt, .md, .mdx, .tex, .bib
 ```
 
 建议文件名使用英文小写和连字符，例如：
@@ -185,6 +185,25 @@ experiment-data.zip
 ```
 
 这样生成的网址更稳定，也更适合分享。
+
+### PDF / DOCX 全文搜索
+
+构建网站时，系统会自动尝试解析 PDF 和 DOCX 正文，把提取出的文本加入站内搜索索引。这样读者可以直接搜索 PDF 讲义、DOCX 模板或论文资料中的关键词。
+
+需要注意：
+
+- DOCX 会从 Word 文档正文、页眉页脚、脚注、尾注和批注 XML 中提取文本。
+- PDF 会解析常见文本流和压缩文本流；如果是扫描版 PDF 或特殊编码 PDF，可能无法完整提取。
+- 旧版 `.doc` 可以下载，但不做全文解析；建议另存为 `.docx`。
+
+如果某个文件搜索效果不理想，可以继续添加同名 `.txt` 旁路文件补充关键词：
+
+```text
+public/files/tutorials/python-env-guide.pdf
+public/files/tutorials/python-env-guide.txt
+```
+
+同名 `.txt` 只用于搜索索引，不会作为单独内容展示。
 
 ## 给已有文章添加下载附件
 
@@ -241,7 +260,8 @@ downloads:
 [下载 Word 模板](/files/tutorials/research-template.docx)
 ```
 
-网站会自动处理 GitHub Pages 镜像路径，本地文件链接也会按下载文件处理。
+网站会自动处理 GitHub Pages 镜像路径，本地文件链接也会按下载文件处理。构建前还会把非草稿 Markdown / MDX 源文件复制到 `public/files/<collection>`，所以文章和教程默认也会拥有源文件下载入口。
+
 ## 新增普通文章
 
 普通文章放在：
@@ -267,6 +287,7 @@ updated: "2026-04-25"
 tags: ["科研", "机器学习"]
 categories: ["研究笔记"]
 draft: false
+language: "zh"
 cover: "/images/lab-cover.jpg"
 ---
 
@@ -319,6 +340,7 @@ date: "2026-04-25"
 tags: ["Transformer", "Deep Learning", "NLP"]
 categories: ["论文阅读"]
 draft: false
+language: "zh"
 cover: "/images/paper-cover.jpg"
 ---
 
@@ -589,22 +611,9 @@ public/files/about/cv.pdf
 
 然后在 CV 页面或关于页面中添加下载链接。
 
-## 评论系统和访问统计
+## 访问统计
 
-评论和统计默认不启用。需要时在 `site.config.ts` 中填写配置。
-
-启用 giscus 评论需要填写：
-
-```ts
-comments: {
-  giscusRepo: "owner/repo",
-  giscusRepoId: "...",
-  giscusCategory: "Announcements",
-  giscusCategoryId: "..."
-}
-```
-
-启用 Umami 或 Plausible：
+评论系统已经从当前项目中移除，网站保持静态、轻量和维护简单。访问统计默认不启用；需要时可以在 `site.config.ts` 中填写 Umami 或 Plausible 配置。
 
 ```ts
 analytics: {
@@ -614,7 +623,7 @@ analytics: {
 }
 ```
 
-配置为空时不会加载第三方脚本。
+配置为空时不会加载第三方统计脚本。
 
 ## 长期后台上传路线
 

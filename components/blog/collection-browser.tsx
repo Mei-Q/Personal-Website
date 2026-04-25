@@ -15,7 +15,8 @@ export function CollectionBrowser({ collection, items }: CollectionBrowserProps)
   const searchParams = useSearchParams();
   const params: SearchParams = {
     tag: searchParams.get("tag") ?? undefined,
-    category: searchParams.get("category") ?? undefined
+    category: searchParams.get("category") ?? undefined,
+    language: searchParams.get("language") ?? undefined
   };
   const filtered = getContentFilterState(items, params);
 
@@ -26,8 +27,10 @@ export function CollectionBrowser({ collection, items }: CollectionBrowserProps)
         basePath={`/${collection}`}
         tags={filtered.tags}
         categories={filtered.categories}
+        languages={filtered.languages}
         activeTag={filtered.tag}
         activeCategory={filtered.category}
+        activeLanguage={filtered.language}
       />
     </div>
   );

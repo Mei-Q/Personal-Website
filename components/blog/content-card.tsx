@@ -1,13 +1,15 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, CalendarDays, Clock3 } from "lucide-react";
+import { ArrowUpRight, CalendarDays, Clock3, Download } from "lucide-react";
 import type { ContentItem } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import {
   collectionLabel,
   formatDate,
   getCollectionHref,
+  languageLabel,
   typeLabel,
+  uniq,
   withBasePath
 } from "@/lib/utils";
 
@@ -18,6 +20,7 @@ type ContentCardProps = {
 
 export function ContentCard({ item, compact = false }: ContentCardProps) {
   const href = getCollectionHref(item.collection, item.slug);
+  const downloadTypes = uniq(item.attachments.map((attachment) => attachment.type).filter(Boolean) as string[]);
 
   return (
     <article className="group min-w-0 overflow-hidden rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--panel))] transition hover:-translate-y-0.5 hover:shadow-soft">
@@ -35,6 +38,13 @@ export function ContentCard({ item, compact = false }: ContentCardProps) {
       <div className="p-5">
         <div className="mb-4 flex flex-wrap items-center gap-2 text-xs text-[rgb(var(--muted-foreground))]">
           <Badge>{typeLabel(item.type)}</Badge>
+          {item.language ? <Badge>{languageLabel(item.language)}</Badge> : null}
+          {item.attachments.length ? (
+            <span className="inline-flex items-center gap-1 rounded-md border border-[rgb(var(--border))] px-2 py-1 text-xs">
+              <Download className="h-3.5 w-3.5" />
+              {downloadTypes.length ? downloadTypes.slice(0, 3).join(" / ") : "下载"}
+            </span>
+          ) : null}
           {item.date ? (
             <span className="inline-flex items-center gap-1">
               <CalendarDays className="h-3.5 w-3.5" />

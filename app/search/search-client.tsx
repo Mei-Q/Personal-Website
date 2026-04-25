@@ -2,17 +2,18 @@
 
 import Fuse from "fuse.js";
 import Link from "next/link";
-import { Download, FileText, FolderSearch, Search, Tags } from "lucide-react";
+import { Download, FileText, FolderSearch, Languages, Search, Tags } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { Collection, SearchItem } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
-import { collectionLabel, formatDate, typeLabel } from "@/lib/utils";
+import { collectionLabel, formatDate, languageLabel, typeLabel, uniq } from "@/lib/utils";
 
 type SearchClientProps = {
   items: SearchItem[];
 };
 
 type SearchFilter = Collection | "all";
+type LanguageFilter = string | "all";
 
 const filters: { label: string; value: SearchFilter }[] = [
   { label: "全部", value: "all" },
@@ -25,29 +26,38 @@ const filters: { label: string; value: SearchFilter }[] = [
 export function SearchClient({ items }: SearchClientProps) {
   const [query, setQuery] = useState("");
   const [collection, setCollection] = useState<SearchFilter>("all");
+  const [language, setLanguage] = useState<LanguageFilter>("all");
+  const languages = useMemo(
+    () => uniq(items.map((item) => item.language).filter(Boolean) as string[]).sort((a, b) => a.localeCompare(b)),
+    [items]
+  );
 
   const fuse = useMemo(
     () =>
       new Fuse(items, {
         keys: [
-          { name: "title", weight: 0.36 },
-          { name: "description", weight: 0.22 },
-          { name: "tags", weight: 0.18 },
+          { name: "title", weight: 0.32 },
+          { name: "description", weight: 0.2 },
+          { name: "tags", weight: 0.16 },
           { name: "categories", weight: 0.1 },
-          { name: "downloadTypes", weight: 0.04 },
-          { name: "plainText", weight: 0.1 }
+          { name: "downloadTypes", weight: 0.06 },
+          { name: "language", weight: 0.04 },
+          { name: "plainText", weight: 0.12 }
         ],
-        threshold: 0.35,
+        threshold: 0.34,
         ignoreLocation: true,
-        minMatchCharLength: 2
+        minMatchCharLength: 1
       }),
     [items]
   );
 
   const results = useMemo(() => {
     const base = query.trim() ? fuse.search(query.trim()).map((result) => result.item) : items;
-    return base.filter((item) => collection === "all" || item.collection === collection).slice(0, 50);
-  }, [collection, fuse, items, query]);
+    return base
+      .filter((item) => collection === "all" || item.collection === collection)
+      .filter((item) => language === "all" || item.language === language)
+      .slice(0, 50);
+  }, [collection, fuse, items, language, query]);
 
   return (
     <div>
@@ -57,7 +67,7 @@ export function SearchClient({ items }: SearchClientProps) {
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="搜索标题、摘要、标签、正文或下载资料关键词"
+            placeholder="搜索标题、摘要、标签、正文、PDF/DOCX 全文或下载资料关键词"
             className="min-w-0 flex-1 bg-transparent text-sm outline-none"
           />
         </label>
@@ -77,6 +87,35 @@ export function SearchClient({ items }: SearchClientProps) {
             </button>
           ))}
         </div>
+        {languages.length ? (
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setLanguage("all")}
+              className={`rounded-md border px-3 py-1.5 text-sm transition ${
+                language === "all"
+                  ? "border-lab-teal bg-lab-teal text-white"
+                  : "border-[rgb(var(--border))] text-[rgb(var(--muted-foreground))] hover:text-[rgb(var(--foreground))]"
+              }`}
+            >
+              全部语言
+            </button>
+            {languages.map((entry) => (
+              <button
+                key={entry}
+                type="button"
+                onClick={() => setLanguage(entry)}
+                className={`rounded-md border px-3 py-1.5 text-sm transition ${
+                  language === entry
+                    ? "border-lab-teal bg-lab-teal text-white"
+                    : "border-[rgb(var(--border))] text-[rgb(var(--muted-foreground))] hover:text-[rgb(var(--foreground))]"
+                }`}
+              >
+                {languageLabel(entry)}
+              </button>
+            ))}
+          </div>
+        ) : null}
       </div>
 
       <div className="mt-8 space-y-4">
@@ -94,6 +133,12 @@ export function SearchClient({ items }: SearchClientProps) {
                   <FileText className="h-3.5 w-3.5" />
                   {collectionLabel(item.collection)}
                 </span>
+                {item.language ? (
+                  <span className="inline-flex items-center gap-1 rounded-md border border-[rgb(var(--border))] px-2 py-1 text-xs text-[rgb(var(--muted-foreground))]">
+                    <Languages className="h-3.5 w-3.5" />
+                    {languageLabel(item.language)}
+                  </span>
+                ) : null}
                 {item.hasAttachments ? (
                   <span className="inline-flex items-center gap-1 rounded-md border border-[rgb(var(--border))] px-2 py-1 text-xs text-[rgb(var(--muted-foreground))]">
                     <Download className="h-3.5 w-3.5" />
@@ -128,7 +173,7 @@ export function SearchClient({ items }: SearchClientProps) {
           ))
         ) : (
           <div className="rounded-lg border border-dashed border-[rgb(var(--border))] p-8 text-center text-sm text-[rgb(var(--muted-foreground))]">
-            没有找到匹配内容。可以尝试减少关键词，或改用标签/分类浏览。
+            没有找到匹配内容。可以尝试减少关键词，或改用标签 / 分类 / 语言筛选。
           </div>
         )}
       </div>

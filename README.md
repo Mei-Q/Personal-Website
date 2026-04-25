@@ -6,15 +6,15 @@
 
 - 首页：个人实验室简介、研究方向、代表论文、精选项目、最新动态和最近内容。
 - 内容系统：`posts`、`papers`、`projects`、`tutorials` 四类内容，统一使用 frontmatter。
-- 文件发布：支持将 PDF、DOCX、ZIP、CSV 等静态文件作为独立内容或下载附件。
+- 文件发布：支持将 PDF、DOCX、PPTX、XLSX、CSV、ZIP、Markdown 源文件等作为独立内容或下载附件。
 - PDF 体验：本地 PDF 附件会在详情页自动生成在线预览。
 - 学术 CV：提供 `/cv` 页面展示教育经历、研究方向、项目经历、技能和亮点。
 - 文章详情：MDX 渲染、代码高亮、数学公式、目录 TOC、阅读时间、上一篇 / 下一篇、相关文章。
 - 下载卡片：MDX 正文可使用 `DownloadCard` 展示 PDF、DOCX、ZIP 等资料。
-- 搜索：基于 Fuse.js 的本地静态搜索，支持同名 `.txt` 文件为 PDF / DOCX 补充搜索文本。
-- SEO：Open Graph、RSS、sitemap、robots、manifest。
+- 搜索：基于 Fuse.js 的本地静态搜索，自动解析常见 PDF 文本流和 DOCX 正文，也支持同名 `.txt` 旁路文件补充搜索文本。
+- SEO：Open Graph、自动生成的页面分享图、RSS、sitemap、robots、manifest。
 - 体验增强：响应式布局、深色模式、阅读进度、返回顶部、代码复制、下载资料面板。
-- 可配置增强：giscus 评论、Umami / Plausible 访问统计。
+- 可配置增强：Umami / Plausible 访问统计。
 - 质量保障：内容校验脚本和 GitHub Actions CI。
 
 ## 目录结构
@@ -55,6 +55,8 @@
 │       ├── tutorials
 │       └── about
 ├── scripts
+│   ├── export-content-downloads.mjs
+│   ├── generate-og-images.mjs
 │   └── validate-content.mjs
 ├── site.config.ts
 ├── next.config.mjs
@@ -80,6 +82,7 @@ http://localhost:3000
 常用检查：
 
 ```bash
+npm run prepare:static
 npm run validate:content
 npm run typecheck
 npm run lint
@@ -111,9 +114,17 @@ content/templates/software-tutorial-template.mdx
 
 `draft: true` 的内容不会在生产环境展示。
 
+可以使用 `language` 标注内容语言，列表页和搜索页会自动提供语言筛选；不写时系统会根据正文粗略推断：
+
+```yaml
+language: "zh"
+# 或
+language: "en"
+```
+
 ## 发布 PDF / DOCX / 下载文件
 
-除了 Markdown / MDX，网站也支持把 PDF、DOCX、ZIP、CSV 等静态文件发布为内容或附件。
+除了 Markdown / MDX，网站也支持把 PDF、DOC、DOCX、PPT、PPTX、XLS、XLSX、CSV、ZIP、RAR、7Z、TXT、BibTeX、TeX 等静态文件发布为内容或附件。
 
 独立内容放置目录：
 
@@ -158,14 +169,14 @@ public/files/tutorials/python-env-guide.json
 }
 ```
 
-如果想让 PDF / DOCX 正文也能被站内搜索命中，可以添加同名 `.txt` 文件：
+PDF / DOCX 会在构建时自动提取正文进入搜索索引。少数扫描版 PDF、复杂编码 PDF 或旧版 `.doc` 无法稳定解析时，可以添加同名 `.txt` 文件补充关键词：
 
 ```text
 public/files/tutorials/python-env-guide.pdf
 public/files/tutorials/python-env-guide.txt
 ```
 
-`.txt` 会进入搜索索引，但不会作为单独下载条目展示。
+`.txt` 会进入搜索索引，但不会作为单独下载条目展示。Markdown / MDX 正文在构建前也会自动复制到 `public/files/<collection>`，因此文章和教程默认可以下载源文件。
 
 给已有 Markdown / MDX 内容添加下载附件，可以在 frontmatter 中使用 `downloads` 或 `attachments`：
 
@@ -209,6 +220,7 @@ npm run validate:content
 - `downloads` / `attachments` 中的本地文件是否真实存在。
 - `public/files` 下的同名 JSON 元数据是否能正确解析。
 - 关键配置文件是否带 UTF-8 BOM。
+- 构建前是否可以生成 Markdown / MDX 源文件下载和 Open Graph 分享图。
 
 ## 站点配置
 
@@ -223,22 +235,11 @@ site.config.ts
 - 站点名称、简介、URL。
 - 作者姓名、身份、头像、邮箱、GitHub、学校主页、Google Scholar、ORCID。
 - 首页研究方向、最新动态和学术 CV 内容。
-- giscus 评论、Umami / Plausible 统计配置。
+- Umami / Plausible 统计配置。
 
-## 评论和统计
+## 访问统计
 
-`site.config.ts` 中的配置为空时，评论和统计不会加载。
-
-启用 giscus：
-
-```ts
-comments: {
-  giscusRepo: "owner/repo",
-  giscusRepoId: "...",
-  giscusCategory: "Announcements",
-  giscusCategoryId: "..."
-}
-```
+评论系统已经从当前项目中移除，网站保持静态、轻量和维护简单。访问统计默认不启用；如果需要，可以在 `site.config.ts` 中填写 Umami 或 Plausible 配置。
 
 启用 Umami 或 Plausible：
 

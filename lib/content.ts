@@ -3,6 +3,7 @@ import path from "node:path";
 import matter from "gray-matter";
 import GithubSlugger from "github-slugger";
 import { siteConfig } from "@/site.config";
+import { extractDocumentText } from "@/lib/document-text";
 import type { ArchiveGroup, Attachment, Collection, ContentItem, Heading, SearchItem } from "@/lib/types";
 import {
   absoluteUrl,
@@ -18,7 +19,7 @@ export const collections: Collection[] = ["posts", "papers", "projects", "tutori
 const contentRoot = path.join(process.cwd(), "content");
 const publicRoot = path.join(process.cwd(), "public");
 const fileRoot = path.join(publicRoot, "files");
-const documentFilePattern = /\.(pdf|docx?|pptx?|xlsx?|csv|zip|rar|7z|txt)$/i;
+const documentFilePattern = /\.(pdf|docx?|pptx?|xlsx?|csv|zip|rar|7z|txt|mdx?|tex|bib)$/i;
 
 const collectionTypeMap: Record<Collection, ContentItem["type"]> = {
   posts: "post",
@@ -152,6 +153,20 @@ export function extractHeadings(content: string): Heading[] {
   return headings;
 }
 
+
+function normalizeLanguage(value: unknown, text: string) {
+  if (typeof value === "string" && value.trim()) {
+    const normalized = value.trim().toLowerCase();
+    if (["zh", "zh-cn", "cn", "chinese"].includes(normalized)) return "zh";
+    if (["en", "en-us", "english"].includes(normalized)) return "en";
+    return normalized;
+  }
+
+  const cjkCount = (text.match(/[\u3400-\u9fff]/g) ?? []).length;
+  const latinCount = (text.match(/[a-zA-Z]/g) ?? []).length;
+  if (!cjkCount && !latinCount) return undefined;
+  return cjkCount >= latinCount / 2 ? "zh" : "en";
+}
 function normalizeStringArray(value: unknown): string[] {
   if (!value) return [];
   if (Array.isArray(value)) return value.map(String);
@@ -205,19 +220,47 @@ function normalizeAttachments(value: unknown): ContentItem["attachments"] {
 }
 
 
+function isMarkdownDocument(extension: string) {
+  return extension === ".md" || extension === ".mdx";
+}
+
+function readMarkdownDocument(filePath: string) {
+  try {
+    return matter(fs.readFileSync(filePath, "utf8"));
+  } catch {
+    return null;
+  }
+}
+
 function readDocumentSearchText(filePath: string) {
+  const extension = path.extname(filePath).toLowerCase();
+  const markdownDocument = isMarkdownDocument(extension) ? readMarkdownDocument(filePath) : null;
+  const extractedText = markdownDocument
+    ? stripMarkdown(markdownDocument.content)
+    : extractDocumentText(filePath);
   const textPath = filePath.replace(path.extname(filePath), ".txt");
-  if (!fs.existsSync(textPath)) return "";
-  return fs.readFileSync(textPath, "utf8").trim();
+  const sidecarText =
+    extension !== ".txt" && fs.existsSync(textPath)
+      ? fs.readFileSync(textPath, "utf8").trim()
+      : "";
+
+  return [extractedText, sidecarText].filter(Boolean).join("\n\n");
 }
 function readDocumentMetadata(filePath: string) {
+  const extension = path.extname(filePath).toLowerCase();
+  const markdownDocument = isMarkdownDocument(extension) ? readMarkdownDocument(filePath) : null;
   const metadataPath = filePath.replace(path.extname(filePath), ".json");
-  if (!fs.existsSync(metadataPath)) return {} as Record<string, unknown>;
+  const markdownData = (markdownDocument?.data ?? {}) as Record<string, unknown>;
+
+  if (!fs.existsSync(metadataPath)) return markdownData;
 
   try {
-    return JSON.parse(fs.readFileSync(metadataPath, "utf8")) as Record<string, unknown>;
+    return {
+      ...markdownData,
+      ...(JSON.parse(fs.readFileSync(metadataPath, "utf8")) as Record<string, unknown>)
+    };
   } catch {
-    return {} as Record<string, unknown>;
+    return markdownData;
   }
 }
 
@@ -228,12 +271,13 @@ function normalizeMarkdownItem(collection: Collection, filePath: string): Conten
   const body = parsed.content.trim();
   const stats = estimateReadingTime(body);
   const type = (data.type as ContentItem["type"] | undefined) ?? collectionTypeMap[collection];
+  const slug = slugFromFile(filePath);
 
   return {
-    slug: slugFromFile(filePath),
+    slug,
     collection,
     type,
-    title: String(data.title ?? slugFromFile(filePath)),
+    title: String(data.title ?? slug),
     description: String(data.description ?? ""),
     date: data.date ? String(data.date) : data.year ? `${data.year}-01-01` : undefined,
     updated: data.updated ? String(data.updated) : undefined,
@@ -241,13 +285,14 @@ function normalizeMarkdownItem(collection: Collection, filePath: string): Conten
     categories: normalizeStringArray(data.categories),
     draft: Boolean(data.draft),
     cover: data.cover ? String(data.cover) : undefined,
+    ogImage: `/og/${collection}-${slug}.svg`,
     body,
     plainText: stripMarkdown(body),
     readingTime: stats.text,
     readingMinutes: stats.minutes,
     headings: extractHeadings(body),
     featured: Boolean(data.featured),
-    language: data.language ? String(data.language) : undefined,
+    language: normalizeLanguage(data.language, [data.title, data.description, body].filter(Boolean).join(" ")),
     authors: normalizeStringArray(data.authors),
     venue: data.venue ? String(data.venue) : undefined,
     year: data.year ? Number(data.year) : undefined,
@@ -293,13 +338,14 @@ function normalizeDocumentItem(collection: Collection, filePath: string): Conten
     categories: normalizeStringArray(data.categories),
     draft: Boolean(data.draft),
     cover: data.cover ? String(data.cover) : undefined,
+    ogImage: `/og/${collection}-${slug}.svg`,
     body,
     plainText: stripMarkdown([title, description, body].filter(Boolean).join("\n")),
     readingTime: stats.text,
     readingMinutes: stats.minutes,
     headings: extractHeadings(body),
     featured: Boolean(data.featured),
-    language: data.language ? String(data.language) : undefined,
+    language: normalizeLanguage(data.language, [data.title, data.description, body].filter(Boolean).join(" ")),
     authors: normalizeStringArray(data.authors),
     venue: data.venue ? String(data.venue) : undefined,
     year: data.year ? Number(data.year) : undefined,
@@ -314,25 +360,28 @@ function normalizeDocumentItem(collection: Collection, filePath: string): Conten
 }
 
 export function getCollection(collection: Collection) {
-  const markdownItems = getMarkdownFiles(collection).map((filePath) =>
-    normalizeMarkdownItem(collection, filePath)
-  );
-  const markdownSlugs = new Set(markdownItems.map((item) => item.slug));
-  const documentItemsBySlug = new Map<string, ContentItem>();
+  const itemsBySlug = new Map<string, ContentItem>();
+
+  for (const filePath of getMarkdownFiles(collection)) {
+    const item = normalizeMarkdownItem(collection, filePath);
+    itemsBySlug.set(item.slug, item);
+  }
 
   for (const filePath of getDocumentFiles(collection)) {
     const item = normalizeDocumentItem(collection, filePath);
-    if (markdownSlugs.has(item.slug)) continue;
+    const existing = itemsBySlug.get(item.slug);
 
-    const existing = documentItemsBySlug.get(item.slug);
     if (existing) {
       existing.attachments.push(...item.attachments);
+      existing.plainText = [existing.plainText, item.plainText].filter(Boolean).join(" ");
+      if (!existing.description && item.description) existing.description = item.description;
+      if (!existing.language && item.language) existing.language = item.language;
     } else {
-      documentItemsBySlug.set(item.slug, item);
+      itemsBySlug.set(item.slug, item);
     }
   }
 
-  return [...markdownItems, ...Array.from(documentItemsBySlug.values())]
+  return Array.from(itemsBySlug.values())
     .filter((item) => canShowDraft(item.draft))
     .sort(byDateDesc);
 }
@@ -448,6 +497,7 @@ export function getSearchIndex(): SearchItem[] {
     categories: item.categories,
     plainText: item.plainText,
     readingTime: item.readingTime,
+    language: item.language,
     href: getCollectionHref(item.collection, item.slug),
     hasAttachments: item.attachments.length > 0,
     downloadTypes: uniq(item.attachments.map((attachment) => attachment.type).filter(Boolean) as string[])

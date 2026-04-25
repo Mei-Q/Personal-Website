@@ -26,6 +26,7 @@ export type ContentItem = {
   categories: string[];
   draft: boolean;
   cover?: string;
+  ogImage?: string;
   body: string;
   plainText: string;
   readingTime: string;
@@ -58,6 +59,7 @@ export type SearchItem = Pick<
   | "categories"
   | "plainText"
   | "readingTime"
+  | "language"
 > & {
   href: string;
   hasAttachments: boolean;

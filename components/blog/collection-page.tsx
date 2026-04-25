@@ -35,6 +35,7 @@ export function CollectionPage({
               basePath={`/${collection}`}
               tags={fallback.tags}
               categories={fallback.categories}
+              languages={fallback.languages}
             />
           </div>
         }

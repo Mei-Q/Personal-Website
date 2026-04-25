@@ -73,7 +73,7 @@ export function createContentMetadata(item: ContentItem): Metadata {
     title: item.title,
     description: item.description,
     path: getCollectionHref(item.collection, item.slug),
-    image: item.cover ?? siteConfig.socialImage,
+    image: item.ogImage ?? item.cover ?? siteConfig.socialImage,
     type: item.collection === "projects" ? "website" : "article",
     keywords: [...item.tags, ...item.categories]
   });

@@ -72,7 +72,7 @@ function Callout({ title = "Note", children }: CalloutProps) {
   );
 }
 
-const downloadableFilePattern = /\.(pdf|docx?|xlsx?|pptx?|zip|rar|7z|csv|json|txt)$/i;
+const downloadableFilePattern = /\.(pdf|docx?|xlsx?|pptx?|zip|rar|7z|csv|json|txt|mdx?|tex|bib)$/i;
 
 export const mdxComponents: MDXComponents = {
   a: ({ href = "", children, ...props }) => {

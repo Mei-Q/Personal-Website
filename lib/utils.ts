@@ -97,3 +97,11 @@ export function escapeXml(input: string) {
 export function normalizeRouteParam(value: string) {
   return decodeURIComponent(value).trim();
 }
+
+export function languageLabel(language?: string) {
+  const labels: Record<string, string> = {
+    zh: "中文",
+    en: "English"
+  };
+  return language ? labels[language] ?? language.toUpperCase() : "未标注";
+}

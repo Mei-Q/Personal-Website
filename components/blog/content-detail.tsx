@@ -3,13 +3,12 @@ import type { ContentItem } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { BackToTop } from "@/components/blog/back-to-top";
 import { CodeCopyEnhancer } from "@/components/blog/code-copy-enhancer";
-import { Comments } from "@/components/blog/comments";
 import { PrevNext } from "@/components/blog/prev-next";
 import { ProgressBar } from "@/components/blog/progress-bar";
 import { RelatedContent } from "@/components/blog/related-content";
 import { TableOfContents } from "@/components/blog/table-of-contents";
 import { MdxRenderer } from "@/components/mdx/mdx-renderer";
-import { formatDate, typeLabel, withBasePath } from "@/lib/utils";
+import { formatDate, languageLabel, typeLabel, withBasePath } from "@/lib/utils";
 
 type ContentDetailProps = {
   item: ContentItem;
@@ -208,6 +207,7 @@ export function ContentDetail({ item, previous, next }: ContentDetailProps) {
           <header className="max-w-3xl">
             <div className="mb-5 flex flex-wrap gap-2">
               <Badge>{typeLabel(item.type)}</Badge>
+              {item.language ? <Badge>{languageLabel(item.language)}</Badge> : null}
               {item.categories.map((category) => (
                 <Badge key={category} href={`/categories/${encodeURIComponent(category)}`}>
                   {category}
@@ -275,9 +275,7 @@ export function ContentDetail({ item, previous, next }: ContentDetailProps) {
           </div>
           <RelatedContent item={item} />
         </article>
-        <section className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <Comments />
-        </section>
+
       </main>
       <CodeCopyEnhancer />
       <BackToTop />

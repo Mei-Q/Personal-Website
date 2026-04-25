@@ -8,7 +8,7 @@ const contentRoot = path.join(root, "content");
 const publicRoot = path.join(root, "public");
 const filesRoot = path.join(publicRoot, "files");
 const collections = ["posts", "papers", "projects", "tutorials"];
-const documentFilePattern = /\.(pdf|docx?|pptx?|xlsx?|csv|zip|rar|7z|txt)$/i;
+const documentFilePattern = /\.(pdf|docx?|pptx?|xlsx?|csv|zip|rar|7z|txt|mdx?|tex|bib)$/i;
 
 const errors = [];
 const warnings = [];
@@ -18,6 +18,10 @@ const noBomFiles = [
   "package-lock.json",
   "next.config.mjs",
   "site.config.ts",
+  "lib/document-text.ts",
+  "scripts/export-content-downloads.mjs",
+  "scripts/generate-og-images.mjs",
+  "scripts/validate-content.mjs",
   "tsconfig.json",
   "vercel.json",
   ".github/workflows/ci.yml",

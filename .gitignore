@@ -9,3 +9,14 @@ coverage
 .npm-cache
 gitdata-test
 *.tsbuildinfo
+
+# Generated static assets from npm run prepare:static
+public/og/*.svg
+public/files/posts/*.md
+public/files/posts/*.mdx
+public/files/papers/*.md
+public/files/papers/*.mdx
+public/files/projects/*.md
+public/files/projects/*.mdx
+public/files/tutorials/*.md
+public/files/tutorials/*.mdx
