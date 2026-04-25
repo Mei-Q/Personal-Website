@@ -10,6 +10,8 @@ type PageProps = {
   params: { category: string };
 };
 
+export const dynamicParams = false;
+
 export function generateStaticParams() {
   return getAllCategories().map((category) => ({ category: category.name }));
 }

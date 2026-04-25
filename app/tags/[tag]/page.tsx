@@ -10,6 +10,8 @@ type PageProps = {
   params: { tag: string };
 };
 
+export const dynamicParams = false;
+
 export function generateStaticParams() {
   return getAllTags().map((tag) => ({ tag: tag.name }));
 }

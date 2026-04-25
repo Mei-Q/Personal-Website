@@ -8,6 +8,8 @@ type PageProps = {
   params: { slug: string };
 };
 
+export const dynamicParams = false;
+
 export function generateStaticParams() {
   return getCollection("posts").map((item) => ({ slug: item.slug }));
 }
