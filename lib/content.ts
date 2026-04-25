@@ -4,7 +4,14 @@ import matter from "gray-matter";
 import GithubSlugger from "github-slugger";
 import { siteConfig } from "@/site.config";
 import type { ArchiveGroup, Collection, ContentItem, Heading, SearchItem } from "@/lib/types";
-import { byDateDesc, formatMonth, getCollectionHref, parseDateValue, uniq } from "@/lib/utils";
+import {
+  absoluteUrl,
+  byDateDesc,
+  formatMonth,
+  getCollectionHref,
+  parseDateValue,
+  uniq
+} from "@/lib/utils";
 
 export const collections: Collection[] = ["posts", "papers", "projects", "tutorials"];
 
@@ -263,7 +270,7 @@ export function getSearchIndex(): SearchItem[] {
 
 export function getAllStaticPaths() {
   const contentEntries = getAllContent().map((item) => ({
-    url: new URL(getCollectionHref(item.collection, item.slug), siteConfig.url).toString(),
+    url: absoluteUrl(siteConfig.url, getCollectionHref(item.collection, item.slug)),
     lastModified: item.updated ?? item.date ?? new Date().toISOString(),
     changeFrequency: "monthly" as const,
     priority: item.featured ? 0.8 : 0.6
@@ -287,7 +294,7 @@ export function getAllStaticPaths() {
     ...tagPaths,
     ...categoryPaths
   ]).map((pathName) => ({
-    url: new URL(pathName, siteConfig.url).toString(),
+    url: absoluteUrl(siteConfig.url, pathName),
     lastModified: new Date().toISOString(),
     changeFrequency: pathName === "/" ? ("weekly" as const) : ("monthly" as const),
     priority: pathName === "/" ? 1 : 0.7

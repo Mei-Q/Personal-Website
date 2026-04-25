@@ -19,7 +19,7 @@ import {
   getFeaturedProjects,
   getRecentContent
 } from "@/lib/content";
-import { formatDate } from "@/lib/utils";
+import { formatDate, withBasePath } from "@/lib/utils";
 
 export default function HomePage() {
   const recent = getRecentContent(6);
@@ -109,7 +109,7 @@ export default function HomePage() {
               return (
                 <a
                   key={link.label}
-                  href={link.href}
+                  href={withBasePath(link.href)}
                   className="flex items-center justify-between rounded-md border border-[rgb(var(--border))] px-3 py-2 text-sm transition hover:border-lab-teal"
                 >
                   <span className="flex items-center gap-2">

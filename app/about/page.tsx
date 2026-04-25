@@ -6,6 +6,7 @@ import { Container } from "@/components/layout/container";
 import { Badge } from "@/components/ui/badge";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { createMetadata } from "@/lib/seo";
+import { withBasePath } from "@/lib/utils";
 
 export const metadata: Metadata = createMetadata({
   title: "关于",
@@ -71,7 +72,7 @@ export default function AboutPage() {
               return (
                 <a
                   key={link.label}
-                  href={link.href}
+                  href={withBasePath(link.href)}
                   className="inline-flex items-center gap-2 rounded-md border border-[rgb(var(--border))] px-3 py-2 text-sm hover:border-lab-teal"
                 >
                   <Icon className="h-4 w-4 text-lab-teal" />

@@ -10,6 +10,12 @@ export function absoluteUrl(baseUrl: string, path = "") {
   return `${base}${suffix}`;
 }
 
+export function withBasePath(href: string) {
+  if (!href.startsWith("/") || href.startsWith("//")) return href;
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+  return `${basePath}${href}`;
+}
+
 export function parseDateValue(date?: string | number) {
   if (!date) return null;
   if (typeof date === "number") return new Date(date);
