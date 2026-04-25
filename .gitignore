@@ -8,3 +8,4 @@ coverage
 .vercel
 .npm-cache
 gitdata-test
+*.tsbuildinfo
