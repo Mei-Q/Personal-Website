@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { siteConfig } from "@/site.config";
 import type { ContentItem } from "@/lib/types";
-import { absoluteUrl, collectionLabel, getCollectionHref } from "@/lib/utils";
+import { absoluteUrl, collectionLabel, getCollectionHref, withBasePath } from "@/lib/utils";
 
 type MetadataOptions = {
   title?: string;
@@ -26,6 +26,7 @@ export function createMetadata({
 
   return {
     metadataBase: new URL(siteConfig.url),
+    manifest: withBasePath("/manifest.webmanifest"),
     title: resolvedTitle,
     description,
     keywords,

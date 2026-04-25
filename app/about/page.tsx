@@ -38,7 +38,7 @@ export default function AboutPage() {
       <section className="grid gap-8 lg:grid-cols-[18rem_minmax(0,1fr)]">
         <aside className="rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--panel))] p-5 lg:self-start">
           <Image
-            src={siteConfig.author.avatar}
+            src={withBasePath(siteConfig.author.avatar)}
             alt={`${siteConfig.author.name} 头像`}
             width={320}
             height={320}

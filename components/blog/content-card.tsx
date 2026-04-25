@@ -3,7 +3,13 @@ import Link from "next/link";
 import { ArrowUpRight, CalendarDays, Clock3 } from "lucide-react";
 import type { ContentItem } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
-import { collectionLabel, formatDate, getCollectionHref, typeLabel } from "@/lib/utils";
+import {
+  collectionLabel,
+  formatDate,
+  getCollectionHref,
+  typeLabel,
+  withBasePath
+} from "@/lib/utils";
 
 type ContentCardProps = {
   item: ContentItem;
@@ -18,7 +24,7 @@ export function ContentCard({ item, compact = false }: ContentCardProps) {
       {item.cover && !compact ? (
         <Link href={href} className="block border-b border-[rgb(var(--border))]">
           <Image
-            src={item.cover}
+            src={withBasePath(item.cover)}
             alt={`${item.title} 封面`}
             width={960}
             height={520}

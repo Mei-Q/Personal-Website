@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Info } from "lucide-react";
+import { withBasePath } from "@/lib/utils";
 
 type CalloutProps = {
   title?: string;
@@ -41,7 +42,7 @@ export const mdxComponents: MDXComponents = {
     if (typeof src !== "string") return null;
     return (
       <Image
-        src={src}
+        src={withBasePath(src)}
         alt={alt}
         width={1200}
         height={720}

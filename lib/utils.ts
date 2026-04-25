@@ -13,6 +13,7 @@ export function absoluteUrl(baseUrl: string, path = "") {
 export function withBasePath(href: string) {
   if (!href.startsWith("/") || href.startsWith("//")) return href;
   const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+  if (basePath && (href === basePath || href.startsWith(`${basePath}/`))) return href;
   return `${basePath}${href}`;
 }
 

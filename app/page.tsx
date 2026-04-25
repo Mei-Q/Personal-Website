@@ -83,7 +83,7 @@ export default function HomePage() {
         <div className="rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--panel))] p-5 shadow-soft">
           <div className="flex items-center gap-4 border-b border-[rgb(var(--border))] pb-5">
             <Image
-              src={siteConfig.author.avatar}
+              src={withBasePath(siteConfig.author.avatar)}
               alt={`${siteConfig.author.name} 头像`}
               width={72}
               height={72}
