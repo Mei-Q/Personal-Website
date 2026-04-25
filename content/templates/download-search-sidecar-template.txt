@@ -1,0 +1,8 @@
+把这段文本复制成与 PDF / DOCX 同名的 .txt 文件，放在同一个 public/files 子目录下。
+例如：
+
+public/files/tutorials/python-env-guide.pdf
+public/files/tutorials/python-env-guide.txt
+
+这个 .txt 文件不会作为单独内容展示，但会进入站内搜索索引。
+建议写入：资料标题、摘要、关键词、章节目录、核心结论和常见别名。

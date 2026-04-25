@@ -14,24 +14,6 @@ export const metadata: Metadata = createMetadata({
   path: "/about"
 });
 
-const experiences = [
-  {
-    title: "个人实验室与科研博客维护",
-    period: "2026 - Present",
-    description: "持续整理论文阅读、实验项目、工程工具链和科研资源。"
-  },
-  {
-    title: "科研软件与全栈开发实践",
-    period: "2024 - 2026",
-    description: "围绕数据处理、仿真工具、Web 可视化和自动化工作流进行实践。"
-  },
-  {
-    title: "学术阅读与知识库建设",
-    period: "Long-term",
-    description: "建立可检索、可复用、可公开分享的 Markdown / MDX 知识库。"
-  }
-];
-
 export default function AboutPage() {
   return (
     <Container className="py-10">
@@ -83,17 +65,13 @@ export default function AboutPage() {
           </div>
         </aside>
         <div>
-          <SectionHeading
-            eyebrow="About"
-            title="个人简介"
-            description={siteConfig.author.bio}
-          />
+          <SectionHeading eyebrow="About" title="个人简介" description={siteConfig.author.bio} />
           <div className="prose prose-neutral dark:prose-invert">
             <p>
-              这个网站是一个公开的个人实验室主页，用来持续记录科研想法、论文阅读、项目代码、软件教程和资料整理。内容系统基于 Markdown / MDX，适合在长期研究过程中低成本维护。
+              这个网站是一个公开的个人实验室主页，用来持续记录科研想法、论文阅读、项目代码、软件教程和资料整理。内容系统基于 Markdown / MDX 与静态下载文件，适合在长期研究过程中低成本维护。
             </p>
             <p>
-              后续可以在 <code>site.config.ts</code> 中替换姓名、头像、邮箱、Google Scholar、ORCID、GitHub 等链接，也可以在 <code>content</code> 目录下新增不同类型的研究内容。
+              当前重点围绕地质三维可视化、科研软件工具链和可复现实验展开。后续可以在 <code>site.config.ts</code> 中继续替换姓名、头像、邮箱、学校主页、Google Scholar、ORCID 等链接，也可以在 <code>content</code> 和 <code>public/files</code> 目录下新增不同类型的研究内容与附件。
             </p>
           </div>
 
@@ -123,7 +101,7 @@ export default function AboutPage() {
               经历
             </h2>
             <div className="space-y-4">
-              {experiences.map((item) => (
+              {siteConfig.cv.experiences.map((item) => (
                 <div
                   key={item.title}
                   className="rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--panel))] p-5"

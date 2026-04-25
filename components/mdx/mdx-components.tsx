@@ -1,14 +1,64 @@
-﻿import type { MDXComponents } from "mdx/types";
+import type { MDXComponents } from "mdx/types";
 import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Info } from "lucide-react";
+import { Download, ExternalLink, FileText, Info } from "lucide-react";
 import { withBasePath } from "@/lib/utils";
 
 type CalloutProps = {
   title?: string;
   children: ReactNode;
 };
+
+type DownloadCardProps = {
+  href: string;
+  label?: string;
+  type?: string;
+  size?: string;
+  description?: string;
+};
+
+function inferFileType(href: string) {
+  const extension = href.split(/[?#]/)[0]?.split(".").pop();
+  return extension ? extension.toUpperCase() : "FILE";
+}
+
+function DownloadCard({ href, label, type, size, description }: DownloadCardProps) {
+  const isExternal = href.startsWith("http");
+  const resolvedHref = href.startsWith("/") ? withBasePath(href) : href;
+  const displayType = type ?? inferFileType(href);
+  const displayLabel = label ?? href.split(/[?#]/)[0]?.split("/").pop() ?? "下载资料";
+
+  return (
+    <a
+      href={resolvedHref}
+      target={isExternal ? "_blank" : undefined}
+      rel={isExternal ? "noreferrer" : undefined}
+      download={isExternal ? undefined : true}
+      className="not-prose my-5 flex gap-3 rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--panel))] p-4 text-sm transition hover:border-lab-teal hover:bg-[rgb(var(--background))]"
+    >
+      <FileText className="mt-0.5 h-5 w-5 shrink-0 text-lab-teal" />
+      <span className="min-w-0 flex-1">
+        <span className="flex items-start justify-between gap-3 font-semibold">
+          <span className="break-words">{displayLabel}</span>
+          {isExternal ? (
+            <ExternalLink className="mt-0.5 h-4 w-4 shrink-0 opacity-70" />
+          ) : (
+            <Download className="mt-0.5 h-4 w-4 shrink-0 opacity-80" />
+          )}
+        </span>
+        <span className="mt-1 block text-xs text-[rgb(var(--muted-foreground))]">
+          {[displayType, size].filter(Boolean).join(" · ")}
+        </span>
+        {description ? (
+          <span className="mt-2 block leading-6 text-[rgb(var(--muted-foreground))]">
+            {description}
+          </span>
+        ) : null}
+      </span>
+    </a>
+  );
+}
 
 function Callout({ title = "Note", children }: CalloutProps) {
   return (
@@ -64,6 +114,6 @@ export const mdxComponents: MDXComponents = {
       />
     );
   },
-  Callout
+  Callout,
+  DownloadCard
 };
-

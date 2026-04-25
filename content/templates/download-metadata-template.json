@@ -1,0 +1,10 @@
+{
+  "title": "可下载资料标题",
+  "description": "这份 PDF / DOCX / ZIP 资料的摘要。",
+  "date": "2026-04-25",
+  "updated": "2026-04-25",
+  "tags": ["资料", "PDF"],
+  "categories": ["资源整理"],
+  "draft": false,
+  "downloadDescription": "说明这个文件适合离线阅读、打印、复现实验或作为模板使用。"
+}

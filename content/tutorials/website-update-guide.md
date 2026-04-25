@@ -520,6 +520,118 @@ $$
 ![图片说明](/images/example.png)
 ```
 
+## PDF 在线预览与搜索索引
+
+如果一篇内容带有本地 PDF 附件，详情页会自动显示“PDF 在线预览”。例如：
+
+```yaml
+downloads:
+  - label: "PDF 讲义"
+    href: "/files/tutorials/python-env-guide.pdf"
+    type: "PDF"
+```
+
+如果 PDF / DOCX 的正文也希望被站内搜索命中，可以放一个同名 `.txt` 文件：
+
+```text
+public/files/tutorials/python-env-guide.pdf
+public/files/tutorials/python-env-guide.txt
+```
+
+`.txt` 文件会进入搜索索引，但不会作为单独下载条目展示。建议写入标题、摘要、关键词、目录和核心结论。
+
+## 在 MDX 正文中使用下载卡片
+
+MDX 内容可以直接使用 `DownloadCard` 组件，让下载资料更醒目：
+
+```mdx
+<DownloadCard
+  href="/files/tutorials/python-env-guide.pdf"
+  label="下载 PDF 讲义"
+  type="PDF"
+  size="1.2 MB"
+  description="适合离线阅读、打印和归档。"
+/>
+```
+
+如果只是普通 Markdown 文件，仍然可以使用链接：
+
+```md
+[下载 PDF 讲义](/files/tutorials/python-env-guide.pdf)
+```
+
+## 学术 CV 页面
+
+网站现在包含 `/cv` 页面，用于集中展示个人学术身份、教育经历、研究方向、项目经历、技能和亮点。
+
+CV 内容主要维护在：
+
+```text
+site.config.ts
+```
+
+重点字段：
+
+```ts
+cv: {
+  education: [],
+  experiences: [],
+  skills: [],
+  highlights: []
+}
+```
+
+如果要提供正式 PDF 简历，可以把文件放到：
+
+```text
+public/files/about/cv.pdf
+```
+
+然后在 CV 页面或关于页面中添加下载链接。
+
+## 评论系统和访问统计
+
+评论和统计默认不启用。需要时在 `site.config.ts` 中填写配置。
+
+启用 giscus 评论需要填写：
+
+```ts
+comments: {
+  giscusRepo: "owner/repo",
+  giscusRepoId: "...",
+  giscusCategory: "Announcements",
+  giscusCategoryId: "..."
+}
+```
+
+启用 Umami 或 Plausible：
+
+```ts
+analytics: {
+  umamiWebsiteId: "...",
+  umamiScriptUrl: "https://cloud.umami.is/script.js",
+  plausibleDomain: "example.com"
+}
+```
+
+配置为空时不会加载第三方脚本。
+
+## 长期后台上传路线
+
+当前网站是静态内容站，维护者通过项目文件更新内容并推送 GitHub。真正的网页端上传需要登录、权限、后端接口和文件存储。
+
+推荐路线：
+
+1. 轻量后台编辑：Decap CMS 或 TinaCMS。
+2. 大文件存储：Vercel Blob、S3、Cloudflare R2 或 GitHub Releases。
+3. 权限控制：GitHub OAuth。
+4. 大规模全文搜索：构建专门搜索索引，而不是只依赖浏览器端 Fuse.js。
+
+路线图记录在：
+
+```text
+docs/ROADMAP.md
+```
 ## 草稿与正式发布
 
 如果一篇内容还没有写完，可以设置：

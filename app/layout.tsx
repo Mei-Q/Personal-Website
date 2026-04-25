@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import "katex/dist/katex.min.css";
 import "@/app/globals.css";
 import { siteConfig } from "@/site.config";
+import { Analytics } from "@/components/layout/analytics";
 import { ThemeProvider } from "@/components/layout/theme-provider";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
@@ -27,6 +28,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <SiteHeader />
           {children}
           <SiteFooter />
+          <Analytics />
         </ThemeProvider>
       </body>
     </html>

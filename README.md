@@ -7,13 +7,14 @@
 - 首页：个人实验室简介、研究方向、代表论文、精选项目、最新动态和最近内容。
 - 内容系统：`posts`、`papers`、`projects`、`tutorials` 四类内容，统一使用 frontmatter。
 - 文件发布：支持将 PDF、DOCX、ZIP、CSV 等静态文件作为独立内容或下载附件。
+- PDF 体验：本地 PDF 附件会在详情页自动生成在线预览。
+- 学术 CV：提供 `/cv` 页面展示教育经历、研究方向、项目经历、技能和亮点。
 - 文章详情：MDX 渲染、代码高亮、数学公式、目录 TOC、阅读时间、上一篇 / 下一篇、相关文章。
-- 论文页面：支持作者、年份、会议 / 期刊、DOI、arXiv、阅读笔记、贡献、方法、优缺点和个人评价。
-- 项目页面：支持项目状态、技术栈、GitHub 链接、Demo 链接和详情页。
-- 标签 / 分类 / 归档：适合长期内容积累。
-- 搜索：基于 Fuse.js 的本地静态搜索。
+- 下载卡片：MDX 正文可使用 `DownloadCard` 展示 PDF、DOCX、ZIP 等资料。
+- 搜索：基于 Fuse.js 的本地静态搜索，支持同名 `.txt` 文件为 PDF / DOCX 补充搜索文本。
 - SEO：Open Graph、RSS、sitemap、robots、manifest。
 - 体验增强：响应式布局、深色模式、阅读进度、返回顶部、代码复制、下载资料面板。
+- 可配置增强：giscus 评论、Umami / Plausible 访问统计。
 - 质量保障：内容校验脚本和 GitHub Actions CI。
 
 ## 目录结构
@@ -31,6 +32,7 @@
 │   ├── tags
 │   ├── categories
 │   ├── search
+│   ├── cv
 │   ├── about
 │   ├── rss.xml
 │   ├── sitemap.ts
@@ -42,6 +44,7 @@
 │   ├── projects
 │   ├── tutorials
 │   └── templates
+├── docs
 ├── lib
 ├── public
 │   ├── images
@@ -49,7 +52,8 @@
 │       ├── posts
 │       ├── papers
 │       ├── projects
-│       └── tutorials
+│       ├── tutorials
+│       └── about
 ├── scripts
 │   └── validate-content.mjs
 ├── site.config.ts
@@ -100,6 +104,9 @@ content/templates/post-template.mdx
 content/templates/paper-template.mdx
 content/templates/project-template.mdx
 content/templates/tutorial-template.mdx
+content/templates/paper-deep-reading-template.mdx
+content/templates/project-report-template.mdx
+content/templates/software-tutorial-template.mdx
 ```
 
 `draft: true` 的内容不会在生产环境展示。
@@ -130,7 +137,7 @@ public/files/tutorials/python-env-guide.docx
 /tutorials/python-env-guide
 ```
 
-同名 PDF 和 DOCX 会合并到同一个详情页，并在“下载资料”面板中显示多个下载按钮。
+同名 PDF 和 DOCX 会合并到同一个详情页，并在“下载资料”面板中显示多个下载按钮。本地 PDF 附件会自动出现在详情页的“PDF 在线预览”区域。
 
 如果要补充标题、摘要、标签和分类，可以添加同名 JSON 元数据文件：
 
@@ -151,6 +158,15 @@ public/files/tutorials/python-env-guide.json
 }
 ```
 
+如果想让 PDF / DOCX 正文也能被站内搜索命中，可以添加同名 `.txt` 文件：
+
+```text
+public/files/tutorials/python-env-guide.pdf
+public/files/tutorials/python-env-guide.txt
+```
+
+`.txt` 会进入搜索索引，但不会作为单独下载条目展示。
+
 给已有 Markdown / MDX 内容添加下载附件，可以在 frontmatter 中使用 `downloads` 或 `attachments`：
 
 ```yaml
@@ -162,6 +178,18 @@ downloads:
   - label: "Word 版本"
     href: "/files/posts/article.docx"
     type: "DOCX"
+```
+
+正文中也可以使用 MDX 下载卡片：
+
+```mdx
+<DownloadCard
+  href="/files/tutorials/python-env-guide.pdf"
+  label="下载 PDF 讲义"
+  type="PDF"
+  size="1.2 MB"
+  description="适合离线阅读和打印的版本。"
+/>
 ```
 
 维护建议：文件名使用英文小写和连字符，例如 `research-report-2026.pdf`，避免中文路径和空格导致部署或分享链接不稳定。
@@ -180,6 +208,7 @@ npm run validate:content
 - `title`、`description`、`tags`、`categories`、`draft` 等字段类型是否合理。
 - `downloads` / `attachments` 中的本地文件是否真实存在。
 - `public/files` 下的同名 JSON 元数据是否能正确解析。
+- 关键配置文件是否带 UTF-8 BOM。
 
 ## 站点配置
 
@@ -193,14 +222,32 @@ site.config.ts
 
 - 站点名称、简介、URL。
 - 作者姓名、身份、头像、邮箱、GitHub、学校主页、Google Scholar、ORCID。
-- 导航菜单。
-- 首页研究方向和最新动态。
-- giscus 评论、Umami / Plausible 统计预留字段。
+- 首页研究方向、最新动态和学术 CV 内容。
+- giscus 评论、Umami / Plausible 统计配置。
 
-Vercel 主站环境变量：
+## 评论和统计
 
-```text
-NEXT_PUBLIC_SITE_URL=https://personal-website-kappa-gules-63.vercel.app
+`site.config.ts` 中的配置为空时，评论和统计不会加载。
+
+启用 giscus：
+
+```ts
+comments: {
+  giscusRepo: "owner/repo",
+  giscusRepoId: "...",
+  giscusCategory: "Announcements",
+  giscusCategoryId: "..."
+}
+```
+
+启用 Umami 或 Plausible：
+
+```ts
+analytics: {
+  umamiWebsiteId: "...",
+  umamiScriptUrl: "https://cloud.umami.is/script.js",
+  plausibleDomain: "example.com"
+}
 ```
 
 ## 部署到 Vercel
@@ -228,6 +275,7 @@ NEXT_PUBLIC_SITE_URL=https://personal-website-kappa-gules-63.vercel.app
 /projects
 /tutorials
 /search
+/cv
 /rss.xml
 /sitemap.xml
 /robots.txt
@@ -263,8 +311,6 @@ NEXT_PUBLIC_BASE_PATH=/Personal-Website
 NEXT_PUBLIC_SITE_URL=https://mei-q.github.io/Personal-Website
 ```
 
-Vercel 不会使用这些变量，因此主站部署不受影响。
-
 ## GitHub Actions CI
 
 项目包含基础 CI：
@@ -281,6 +327,16 @@ npm run typecheck
 npm run lint
 npm run build
 ```
+
+## 长期升级路线
+
+长期规划见：
+
+```text
+docs/ROADMAP.md
+```
+
+真正的网页端上传和后台编辑需要登录、权限、后端接口和文件存储。当前项目保持静态优先，已为 Decap CMS / TinaCMS、Vercel Blob / S3 / Cloudflare R2、GitHub OAuth 和全文索引服务预留了内容结构与文档说明。
 
 ## 常用命令
 

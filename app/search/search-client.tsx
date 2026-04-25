@@ -2,7 +2,7 @@
 
 import Fuse from "fuse.js";
 import Link from "next/link";
-import { FileText, FolderSearch, Search, Tags } from "lucide-react";
+import { Download, FileText, FolderSearch, Search, Tags } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { Collection, SearchItem } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
@@ -30,10 +30,11 @@ export function SearchClient({ items }: SearchClientProps) {
     () =>
       new Fuse(items, {
         keys: [
-          { name: "title", weight: 0.38 },
+          { name: "title", weight: 0.36 },
           { name: "description", weight: 0.22 },
-          { name: "tags", weight: 0.2 },
+          { name: "tags", weight: 0.18 },
           { name: "categories", weight: 0.1 },
+          { name: "downloadTypes", weight: 0.04 },
           { name: "plainText", weight: 0.1 }
         ],
         threshold: 0.35,
@@ -44,12 +45,8 @@ export function SearchClient({ items }: SearchClientProps) {
   );
 
   const results = useMemo(() => {
-    const base = query.trim()
-      ? fuse.search(query.trim()).map((result) => result.item)
-      : items;
-    return base
-      .filter((item) => collection === "all" || item.collection === collection)
-      .slice(0, 50);
+    const base = query.trim() ? fuse.search(query.trim()).map((result) => result.item) : items;
+    return base.filter((item) => collection === "all" || item.collection === collection).slice(0, 50);
   }, [collection, fuse, items, query]);
 
   return (
@@ -60,7 +57,7 @@ export function SearchClient({ items }: SearchClientProps) {
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="搜索标题、摘要、标签或正文关键词"
+            placeholder="搜索标题、摘要、标签、正文或下载资料关键词"
             className="min-w-0 flex-1 bg-transparent text-sm outline-none"
           />
         </label>
@@ -86,42 +83,48 @@ export function SearchClient({ items }: SearchClientProps) {
         <p className="text-sm text-[rgb(var(--muted-foreground))]">找到 {results.length} 条结果</p>
         {results.length ? (
           results.map((item) => (
-          <Link
-            key={`${item.collection}-${item.slug}`}
-            href={item.href}
-            className="block rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--panel))] p-5 transition hover:border-lab-teal"
-          >
-            <div className="mb-3 flex flex-wrap items-center gap-2">
-              <Badge>{typeLabel(item.type)}</Badge>
-              <span className="inline-flex items-center gap-1 text-xs text-[rgb(var(--muted-foreground))]">
-                <FileText className="h-3.5 w-3.5" />
-                {collectionLabel(item.collection)}
-              </span>
-              {item.date ? (
-                <span className="text-xs text-[rgb(var(--muted-foreground))]">
-                  {formatDate(item.date)}
+            <Link
+              key={`${item.collection}-${item.slug}`}
+              href={item.href}
+              className="block rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--panel))] p-5 transition hover:border-lab-teal"
+            >
+              <div className="mb-3 flex flex-wrap items-center gap-2">
+                <Badge>{typeLabel(item.type)}</Badge>
+                <span className="inline-flex items-center gap-1 text-xs text-[rgb(var(--muted-foreground))]">
+                  <FileText className="h-3.5 w-3.5" />
+                  {collectionLabel(item.collection)}
                 </span>
-              ) : null}
-            </div>
-            <h2 className="text-lg font-semibold">{item.title}</h2>
-            <p className="mt-2 line-clamp-2 text-sm leading-6 text-[rgb(var(--muted-foreground))]">
-              {item.description || item.plainText}
-            </p>
-            <div className="mt-4 flex flex-wrap gap-2 text-xs text-[rgb(var(--muted-foreground))]">
-              {item.categories.length ? (
-                <span className="inline-flex items-center gap-1">
-                  <FolderSearch className="h-3.5 w-3.5" />
-                  {item.categories.join(", ")}
-                </span>
-              ) : null}
-              {item.tags.length ? (
-                <span className="inline-flex items-center gap-1">
-                  <Tags className="h-3.5 w-3.5" />
-                  {item.tags.join(", ")}
-                </span>
-              ) : null}
-            </div>
-          </Link>
+                {item.hasAttachments ? (
+                  <span className="inline-flex items-center gap-1 rounded-md border border-[rgb(var(--border))] px-2 py-1 text-xs text-[rgb(var(--muted-foreground))]">
+                    <Download className="h-3.5 w-3.5" />
+                    {item.downloadTypes.length ? item.downloadTypes.join(" / ") : "下载资料"}
+                  </span>
+                ) : null}
+                {item.date ? (
+                  <span className="text-xs text-[rgb(var(--muted-foreground))]">
+                    {formatDate(item.date)}
+                  </span>
+                ) : null}
+              </div>
+              <h2 className="text-lg font-semibold">{item.title}</h2>
+              <p className="mt-2 line-clamp-2 text-sm leading-6 text-[rgb(var(--muted-foreground))]">
+                {item.description || item.plainText}
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2 text-xs text-[rgb(var(--muted-foreground))]">
+                {item.categories.length ? (
+                  <span className="inline-flex items-center gap-1">
+                    <FolderSearch className="h-3.5 w-3.5" />
+                    {item.categories.join(", ")}
+                  </span>
+                ) : null}
+                {item.tags.length ? (
+                  <span className="inline-flex items-center gap-1">
+                    <Tags className="h-3.5 w-3.5" />
+                    {item.tags.join(", ")}
+                  </span>
+                ) : null}
+              </div>
+            </Link>
           ))
         ) : (
           <div className="rounded-lg border border-dashed border-[rgb(var(--border))] p-8 text-center text-sm text-[rgb(var(--muted-foreground))]">

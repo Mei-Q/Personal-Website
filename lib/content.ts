@@ -1,4 +1,4 @@
-﻿import fs from "node:fs";
+import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
 import GithubSlugger from "github-slugger";
@@ -53,9 +53,22 @@ function getDocumentFiles(collection: Collection) {
   const directory = getFileCollectionDir(collection);
   if (!fs.existsSync(directory)) return [];
 
-  return fs
-    .readdirSync(directory, { withFileTypes: true })
-    .filter((entry) => entry.isFile() && documentFilePattern.test(entry.name))
+  const entries = fs.readdirSync(directory, { withFileTypes: true });
+  const downloadableBaseNames = new Set(
+    entries
+      .filter((entry) => entry.isFile() && documentFilePattern.test(entry.name) && !entry.name.endsWith(".txt"))
+      .map((entry) => path.parse(entry.name).name)
+  );
+
+  return entries
+    .filter((entry) => {
+      if (!entry.isFile() || !documentFilePattern.test(entry.name)) return false;
+      const parsed = path.parse(entry.name);
+      if (parsed.ext.toLowerCase() === ".txt" && downloadableBaseNames.has(parsed.name)) {
+        return false;
+      }
+      return true;
+    })
     .map((entry) => path.join(directory, entry.name));
 }
 
@@ -191,6 +204,12 @@ function normalizeAttachments(value: unknown): ContentItem["attachments"] {
     .filter((attachment): attachment is Attachment => Boolean(attachment));
 }
 
+
+function readDocumentSearchText(filePath: string) {
+  const textPath = filePath.replace(path.extname(filePath), ".txt");
+  if (!fs.existsSync(textPath)) return "";
+  return fs.readFileSync(textPath, "utf8").trim();
+}
 function readDocumentMetadata(filePath: string) {
   const metadataPath = filePath.replace(path.extname(filePath), ".json");
   if (!fs.existsSync(metadataPath)) return {} as Record<string, unknown>;
@@ -250,7 +269,9 @@ function normalizeDocumentItem(collection: Collection, filePath: string): Conten
   const slug = data.slug ? String(data.slug) : slugFromDocumentFile(filePath);
   const title = String(data.title ?? titleFromDocumentFile(filePath));
   const description = String(data.description ?? `${title} 的 ${fileType} 下载文件。`);
-  const body = data.body ? String(data.body).trim() : "";
+  const body = [data.body ? String(data.body).trim() : "", readDocumentSearchText(filePath)]
+    .filter(Boolean)
+    .join("\n\n");
   const stats = body ? estimateReadingTime(body) : { text: "文件下载", minutes: 1 };
   const primaryAttachment = {
     label: String(data.downloadLabel ?? `${title}.${fileType.toLowerCase()}`),
@@ -427,7 +448,9 @@ export function getSearchIndex(): SearchItem[] {
     categories: item.categories,
     plainText: item.plainText,
     readingTime: item.readingTime,
-    href: getCollectionHref(item.collection, item.slug)
+    href: getCollectionHref(item.collection, item.slug),
+    hasAttachments: item.attachments.length > 0,
+    downloadTypes: uniq(item.attachments.map((attachment) => attachment.type).filter(Boolean) as string[])
   }));
 }
 
@@ -453,6 +476,7 @@ export function getAllStaticPaths() {
     "/tags",
     "/categories",
     "/search",
+    "/cv",
     "/about",
     ...tagPaths,
     ...categoryPaths

@@ -1,4 +1,4 @@
-﻿export type Collection = "posts" | "papers" | "projects" | "tutorials";
+export type Collection = "posts" | "papers" | "projects" | "tutorials";
 
 export type Heading = {
   id: string;
@@ -60,6 +60,8 @@ export type SearchItem = Pick<
   | "readingTime"
 > & {
   href: string;
+  hasAttachments: boolean;
+  downloadTypes: string[];
 };
 
 export type ArchiveGroup = {

@@ -1,8 +1,9 @@
-﻿import { CalendarDays, Clock3, Download, ExternalLink, FileText, Github, RefreshCw } from "lucide-react";
+import { CalendarDays, Clock3, Download, ExternalLink, FileText, Github, RefreshCw } from "lucide-react";
 import type { ContentItem } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { BackToTop } from "@/components/blog/back-to-top";
 import { CodeCopyEnhancer } from "@/components/blog/code-copy-enhancer";
+import { Comments } from "@/components/blog/comments";
 import { PrevNext } from "@/components/blog/prev-next";
 import { ProgressBar } from "@/components/blog/progress-bar";
 import { RelatedContent } from "@/components/blog/related-content";
@@ -108,6 +109,47 @@ function MetadataPanel({ item }: { item: ContentItem }) {
   return null;
 }
 
+
+function getPreviewablePdf(item: ContentItem) {
+  return item.attachments.find((attachment) => {
+    const isLocal = attachment.href.startsWith("/") && !attachment.href.startsWith("//");
+    const type = attachment.type?.toLowerCase();
+    return isLocal && (type === "pdf" || attachment.href.split(/[?#]/)[0]?.toLowerCase().endsWith(".pdf"));
+  });
+}
+
+function PdfPreview({ item }: { item: ContentItem }) {
+  const pdf = getPreviewablePdf(item);
+  if (!pdf) return null;
+
+  const href = withBasePath(pdf.href);
+
+  return (
+    <section className="not-prose mt-8 rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--panel))] p-4">
+      <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="text-sm font-semibold">PDF 在线预览</h2>
+          <p className="mt-1 text-xs text-[rgb(var(--muted-foreground))]">
+            如果浏览器无法预览，请使用右侧下载资料获取文件。
+          </p>
+        </div>
+        <a
+          href={href}
+          download
+          className="inline-flex items-center justify-center gap-2 rounded-md border border-[rgb(var(--border))] px-3 py-2 text-sm font-medium hover:border-lab-teal"
+        >
+          <Download className="h-4 w-4" />
+          下载 PDF
+        </a>
+      </div>
+      <iframe
+        title={`${pdf.label} PDF 预览`}
+        src={href}
+        className="h-[70vh] min-h-[28rem] w-full rounded-md border border-[rgb(var(--border))] bg-white"
+      />
+    </section>
+  );
+}
 function DownloadPanel({ item }: { item: ContentItem }) {
   if (!item.attachments.length) return null;
 
@@ -222,6 +264,7 @@ export function ContentDetail({ item, previous, next }: ContentDetailProps) {
                   这条内容以文件形式发布。请使用下载资料中的链接获取 PDF、DOCX 或其他附件。
                 </div>
               )}
+              <PdfPreview item={item} />
               <PrevNext previous={previous} next={next} />
             </div>
             <aside className="order-first space-y-5 lg:order-none lg:sticky lg:top-28 lg:self-start">
@@ -233,9 +276,7 @@ export function ContentDetail({ item, previous, next }: ContentDetailProps) {
           <RelatedContent item={item} />
         </article>
         <section className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="rounded-lg border border-dashed border-[rgb(var(--border))] bg-[rgb(var(--panel))] p-5 text-sm text-[rgb(var(--muted-foreground))]">
-            讨论区预留：在 <code>site.config.ts</code> 中填写 giscus 配置后，可替换为正式评论组件。
-          </div>
+          <Comments />
         </section>
       </main>
       <CodeCopyEnhancer />
