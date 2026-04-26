@@ -707,10 +707,10 @@ E:\node\npm.cmd run validate:content
 ```powershell
 cd "D:\Sweet_Lemon\Desktop\Personal website"
 
-git --git-dir=gitdata-test --work-tree=. status --short
-git --git-dir=gitdata-test --work-tree=. add .
-git --git-dir=gitdata-test --work-tree=. commit -m "Update site content"
-git --git-dir=gitdata-test --work-tree=. push origin main
+git remote set-url origin https://github.com/Mei-Q/Personal-Website.git
+git add -A
+git commit -m "Update website"
+git push -u origin main
 ```
 
 推送成功后，两个站点会自动更新：
