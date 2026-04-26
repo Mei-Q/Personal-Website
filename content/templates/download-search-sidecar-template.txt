@@ -4,7 +4,7 @@
 - PDF：常见文本流和压缩文本流。
 - DOCX：正文、页眉页脚、脚注、尾注和批注 XML。
 
-如果遇到扫描版 PDF、复杂编码 PDF、旧版 .doc 或解析效果不理想的文件，可以新建同名 .txt 放在同一目录。例如：
+如果遇到扫描版 PDF、复杂编码 PDF、超过自动解析上限的大文件、旧版 .doc 或解析效果不理想的文件，可以新建同名 .txt 放在同一目录。例如：
 
 public/files/tutorials/python-env-guide.pdf
 public/files/tutorials/python-env-guide.txt

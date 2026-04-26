@@ -2,6 +2,33 @@ import fs from "node:fs";
 import path from "node:path";
 import zlib from "node:zlib";
 
+const defaultMaxExtractBytes = 8 * 1024 * 1024;
+const defaultMaxExtractChars = 120_000;
+
+function getNumericEnv(name: string, fallback: number) {
+  const value = Number(process.env[name]);
+  return Number.isFinite(value) && value > 0 ? value : fallback;
+}
+
+function maxExtractBytes() {
+  return getNumericEnv("CONTENT_EXTRACT_MAX_BYTES", defaultMaxExtractBytes);
+}
+
+function maxExtractChars() {
+  return getNumericEnv("CONTENT_EXTRACT_MAX_CHARS", defaultMaxExtractChars);
+}
+
+function limitExtractedText(input: string) {
+  const limit = maxExtractChars();
+  return input.length > limit ? input.slice(0, limit) : input;
+}
+
+function readExtractableFile(filePath: string) {
+  const stat = fs.statSync(filePath);
+  if (stat.size > maxExtractBytes()) return null;
+  return fs.readFileSync(filePath);
+}
+
 function decodeXmlEntities(input: string) {
   return input
     .replace(/&lt;/g, "<")
@@ -14,11 +41,13 @@ function decodeXmlEntities(input: string) {
 }
 
 function normalizeExtractedText(input: string) {
-  return input
-    .replace(/\r/g, "\n")
-    .replace(/[\t ]+/g, " ")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
+  return limitExtractedText(
+    input
+      .replace(/\r/g, "\n")
+      .replace(/[\t ]+/g, " ")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim()
+  );
 }
 
 function decodePdfLiteralString(input: string) {
@@ -84,16 +113,25 @@ function collectPdfStrings(content: string) {
   const hexPattern = /<([0-9a-fA-F\s]+)>\s*(?:Tj|'|")/g;
   const arrayPattern = /\[((?:.|\n|\r)*?)\]\s*TJ/g;
   let match: RegExpExecArray | null;
+  let currentLength = 0;
+  const limit = maxExtractChars();
 
-  while ((match = literalPattern.exec(content))) {
-    parts.push(decodePdfLiteralString(match[1]));
+  function pushPart(value: string) {
+    if (!value || currentLength >= limit) return;
+    const clipped = value.slice(0, Math.max(0, limit - currentLength));
+    parts.push(clipped);
+    currentLength += clipped.length;
   }
 
-  while ((match = hexPattern.exec(content))) {
-    parts.push(decodePdfHexString(match[1]));
+  while ((match = literalPattern.exec(content)) && currentLength < limit) {
+    pushPart(decodePdfLiteralString(match[1]));
   }
 
-  while ((match = arrayPattern.exec(content))) {
+  while ((match = hexPattern.exec(content)) && currentLength < limit) {
+    pushPart(decodePdfHexString(match[1]));
+  }
+
+  while ((match = arrayPattern.exec(content)) && currentLength < limit) {
     const arrayContent = match[1];
     const tokenPattern = /\(((?:\\.|[^\\)])*)\)|<([0-9a-fA-F\s]+)>/g;
     let arrayMatch: RegExpExecArray | null;
@@ -104,8 +142,9 @@ function collectPdfStrings(content: string) {
           ? decodePdfLiteralString(arrayMatch[1])
           : decodePdfHexString(arrayMatch[2])
       );
+      if (lineParts.join("").length + currentLength >= limit) break;
     }
-    if (lineParts.length) parts.push(lineParts.join(""));
+    pushPart(lineParts.join(""));
   }
 
   return parts.join("\n");
@@ -113,10 +152,21 @@ function collectPdfStrings(content: string) {
 
 function extractPdfStreams(buffer: Buffer) {
   const source = buffer.toString("latin1");
-  const outputs: string[] = [collectPdfStrings(source)];
+  const outputs: string[] = [];
+  let outputLength = 0;
   let cursor = 0;
+  const limit = maxExtractChars();
 
-  while (cursor < source.length) {
+  function pushOutput(value: string) {
+    if (!value || outputLength >= limit) return;
+    const clipped = value.slice(0, Math.max(0, limit - outputLength));
+    outputs.push(clipped);
+    outputLength += clipped.length;
+  }
+
+  pushOutput(collectPdfStrings(source));
+
+  while (cursor < source.length && outputLength < limit) {
     const streamIndex = source.indexOf("stream", cursor);
     if (streamIndex === -1) break;
     const endIndex = source.indexOf("endstream", streamIndex);
@@ -146,7 +196,7 @@ function extractPdfStreams(buffer: Buffer) {
       }
     }
 
-    outputs.push(collectPdfStrings(decoded.toString("latin1")));
+    pushOutput(collectPdfStrings(decoded.toString("latin1")));
     cursor = endIndex + "endstream".length;
   }
 
@@ -155,7 +205,8 @@ function extractPdfStreams(buffer: Buffer) {
 
 export function extractPdfText(filePath: string) {
   try {
-    return normalizeExtractedText(extractPdfStreams(fs.readFileSync(filePath)));
+    const buffer = readExtractableFile(filePath);
+    return buffer ? normalizeExtractedText(extractPdfStreams(buffer)) : "";
   } catch {
     return "";
   }
@@ -234,7 +285,8 @@ function extractTextFromWordXml(xml: string) {
 
 export function extractDocxText(filePath: string) {
   try {
-    const buffer = fs.readFileSync(filePath);
+    const buffer = readExtractableFile(filePath);
+    if (!buffer) return "";
     const entries = readZipEntries(buffer).filter((entry) =>
       /word\/(document|footnotes|endnotes|comments|header\d+|footer\d+)\.xml$/.test(entry.name)
     );
@@ -261,7 +313,7 @@ export function extractDocumentText(filePath: string) {
   const extension = path.extname(filePath).toLowerCase();
   if (extension === ".pdf") return extractPdfText(filePath);
   if (extension === ".docx") return extractDocxText(filePath);
-  if ([".txt", ".csv", ".md", ".mdx", ".json"].includes(extension)) {
+  if ([".txt", ".csv", ".md", ".mdx", ".json", ".tex", ".bib"].includes(extension)) {
     return extractPlainTextFile(filePath);
   }
   return "";

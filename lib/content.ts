@@ -20,6 +20,10 @@ const contentRoot = path.join(process.cwd(), "content");
 const publicRoot = path.join(process.cwd(), "public");
 const fileRoot = path.join(publicRoot, "files");
 const documentFilePattern = /\.(pdf|docx?|pptx?|xlsx?|csv|zip|rar|7z|txt|mdx?|tex|bib)$/i;
+const documentTextCache = new Map<string, string>();
+const documentMetadataCache = new Map<string, Record<string, unknown>>();
+const collectionCache = new Map<Collection, ContentItem[]>();
+let allContentCache: ContentItem[] | null = null;
 
 const collectionTypeMap: Record<Collection, ContentItem["type"]> = {
   posts: "post",
@@ -233,6 +237,9 @@ function readMarkdownDocument(filePath: string) {
 }
 
 function readDocumentSearchText(filePath: string) {
+  const cached = documentTextCache.get(filePath);
+  if (cached !== undefined) return cached;
+
   const extension = path.extname(filePath).toLowerCase();
   const markdownDocument = isMarkdownDocument(extension) ? readMarkdownDocument(filePath) : null;
   const extractedText = markdownDocument
@@ -243,27 +250,35 @@ function readDocumentSearchText(filePath: string) {
     extension !== ".txt" && fs.existsSync(textPath)
       ? fs.readFileSync(textPath, "utf8").trim()
       : "";
+  const value = [extractedText, sidecarText].filter(Boolean).join("\n\n");
 
-  return [extractedText, sidecarText].filter(Boolean).join("\n\n");
+  documentTextCache.set(filePath, value);
+  return value;
 }
 function readDocumentMetadata(filePath: string) {
+  const cached = documentMetadataCache.get(filePath);
+  if (cached) return cached;
+
   const extension = path.extname(filePath).toLowerCase();
   const markdownDocument = isMarkdownDocument(extension) ? readMarkdownDocument(filePath) : null;
   const metadataPath = filePath.replace(path.extname(filePath), ".json");
   const markdownData = (markdownDocument?.data ?? {}) as Record<string, unknown>;
+  let value = markdownData;
 
-  if (!fs.existsSync(metadataPath)) return markdownData;
-
-  try {
-    return {
-      ...markdownData,
-      ...(JSON.parse(fs.readFileSync(metadataPath, "utf8")) as Record<string, unknown>)
-    };
-  } catch {
-    return markdownData;
+  if (fs.existsSync(metadataPath)) {
+    try {
+      value = {
+        ...markdownData,
+        ...(JSON.parse(fs.readFileSync(metadataPath, "utf8")) as Record<string, unknown>)
+      };
+    } catch {
+      value = markdownData;
+    }
   }
-}
 
+  documentMetadataCache.set(filePath, value);
+  return value;
+}
 function normalizeMarkdownItem(collection: Collection, filePath: string): ContentItem {
   const raw = fs.readFileSync(filePath, "utf8");
   const parsed = matter(raw);
@@ -360,6 +375,9 @@ function normalizeDocumentItem(collection: Collection, filePath: string): Conten
 }
 
 export function getCollection(collection: Collection) {
+  const cached = collectionCache.get(collection);
+  if (cached) return cached;
+
   const itemsBySlug = new Map<string, ContentItem>();
 
   for (const filePath of getMarkdownFiles(collection)) {
@@ -381,13 +399,18 @@ export function getCollection(collection: Collection) {
     }
   }
 
-  return Array.from(itemsBySlug.values())
+  const items = Array.from(itemsBySlug.values())
     .filter((item) => canShowDraft(item.draft))
     .sort(byDateDesc);
+
+  collectionCache.set(collection, items);
+  return items;
 }
 
 export function getAllContent() {
-  return collections.flatMap((collection) => getCollection(collection)).sort(byDateDesc);
+  if (allContentCache) return allContentCache;
+  allContentCache = collections.flatMap((collection) => getCollection(collection)).sort(byDateDesc);
+  return allContentCache;
 }
 
 export function getContentItem(collection: Collection, slug: string) {

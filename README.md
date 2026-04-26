@@ -169,14 +169,14 @@ public/files/tutorials/python-env-guide.json
 }
 ```
 
-PDF / DOCX 会在构建时自动提取正文进入搜索索引。少数扫描版 PDF、复杂编码 PDF 或旧版 `.doc` 无法稳定解析时，可以添加同名 `.txt` 文件补充关键词：
+PDF / DOCX 会在构建时自动提取正文进入搜索索引。为了避免 Vercel 构建超时，默认只自动解析 8MB 以内的 PDF / DOCX，并把提取文本裁剪到约 120000 个字符；少数扫描版 PDF、复杂编码 PDF、大文件或旧版 `.doc` 无法稳定解析时，可以添加同名 `.txt` 文件补充关键词：
 
 ```text
 public/files/tutorials/python-env-guide.pdf
 public/files/tutorials/python-env-guide.txt
 ```
 
-`.txt` 会进入搜索索引，但不会作为单独下载条目展示。Markdown / MDX 正文在构建前也会自动复制到 `public/files/<collection>`，因此文章和教程默认可以下载源文件。
+`.txt` 会进入搜索索引，但不会作为单独下载条目展示。Markdown / MDX 正文在构建前也会自动复制到 `public/files/<collection>`，因此文章和教程默认可以下载源文件。自动解析上限可通过 Vercel 环境变量 `CONTENT_EXTRACT_MAX_BYTES` 和 `CONTENT_EXTRACT_MAX_CHARS` 调整。
 
 给已有 Markdown / MDX 内容添加下载附件，可以在 frontmatter 中使用 `downloads` 或 `attachments`：
 
