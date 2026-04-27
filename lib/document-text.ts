@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import zlib from "node:zlib";
 
-const defaultMaxExtractBytes = 8 * 1024 * 1024;
+const defaultMaxExtractBytes = 1024 * 1024;
 const defaultMaxExtractChars = 120_000;
 
 function getNumericEnv(name: string, fallback: number) {

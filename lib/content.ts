@@ -321,6 +321,17 @@ function normalizeMarkdownItem(collection: Collection, filePath: string): Conten
   };
 }
 
+function getDocumentSearchTextForItem(item: ContentItem) {
+  return getDocumentFiles(item.collection)
+    .filter((filePath) => {
+      const data = readDocumentMetadata(filePath);
+      const slug = data.slug ? String(data.slug) : slugFromDocumentFile(filePath);
+      return slug === item.slug;
+    })
+    .map((filePath) => readDocumentSearchText(filePath))
+    .filter(Boolean)
+    .join(" ");
+}
 function normalizeDocumentItem(collection: Collection, filePath: string): ContentItem {
   const data = readDocumentMetadata(filePath);
   const stat = fs.statSync(filePath);
@@ -329,9 +340,7 @@ function normalizeDocumentItem(collection: Collection, filePath: string): Conten
   const slug = data.slug ? String(data.slug) : slugFromDocumentFile(filePath);
   const title = String(data.title ?? titleFromDocumentFile(filePath));
   const description = String(data.description ?? `${title} 的 ${fileType} 下载文件。`);
-  const body = [data.body ? String(data.body).trim() : "", readDocumentSearchText(filePath)]
-    .filter(Boolean)
-    .join("\n\n");
+  const body = data.body ? String(data.body).trim() : "";
   const stats = body ? estimateReadingTime(body) : { text: "文件下载", minutes: 1 };
   const primaryAttachment = {
     label: String(data.downloadLabel ?? `${title}.${fileType.toLowerCase()}`),
@@ -518,7 +527,7 @@ export function getSearchIndex(): SearchItem[] {
     updated: item.updated,
     tags: item.tags,
     categories: item.categories,
-    plainText: item.plainText,
+    plainText: [item.plainText, getDocumentSearchTextForItem(item)].filter(Boolean).join(" "),
     readingTime: item.readingTime,
     language: item.language,
     href: getCollectionHref(item.collection, item.slug),

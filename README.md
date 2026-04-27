@@ -169,7 +169,7 @@ public/files/tutorials/python-env-guide.json
 }
 ```
 
-PDF / DOCX 会在构建时自动提取正文进入搜索索引。为了避免 Vercel 构建超时，默认只自动解析 8MB 以内的 PDF / DOCX，并把提取文本裁剪到约 120000 个字符；少数扫描版 PDF、复杂编码 PDF、大文件或旧版 `.doc` 无法稳定解析时，可以添加同名 `.txt` 文件补充关键词：
+PDF / DOCX 会在构建时自动提取正文进入搜索索引。为了避免 Vercel 构建超时，默认只自动解析 1MB 以内的 PDF / DOCX，并把提取文本裁剪到约 120000 个字符；少数扫描版 PDF、复杂编码 PDF、大文件或旧版 `.doc` 无法稳定解析时，可以添加同名 `.txt` 文件补充关键词：
 
 ```text
 public/files/tutorials/python-env-guide.pdf
