@@ -108,7 +108,6 @@ function MetadataPanel({ item }: { item: ContentItem }) {
   return null;
 }
 
-
 function getPreviewablePdf(item: ContentItem) {
   return item.attachments.find((attachment) => {
     const isLocal = attachment.href.startsWith("/") && !attachment.href.startsWith("//");
@@ -117,19 +116,23 @@ function getPreviewablePdf(item: ContentItem) {
   });
 }
 
-function PdfPreview({ item }: { item: ContentItem }) {
+function PdfPreview({ item, primary = false }: { item: ContentItem; primary?: boolean }) {
   const pdf = getPreviewablePdf(item);
   if (!pdf) return null;
 
   const href = withBasePath(pdf.href);
 
   return (
-    <section className="not-prose mt-8 rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--panel))] p-4">
+    <section
+      className={`not-prose rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--panel))] p-3 sm:p-4 ${
+        primary ? "" : "mt-8"
+      }`}
+    >
       <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-sm font-semibold">PDF 在线预览</h2>
+          <h2 className="text-sm font-semibold">PDF 阅读窗口</h2>
           <p className="mt-1 text-xs text-[rgb(var(--muted-foreground))]">
-            如果浏览器无法预览，请使用右侧下载资料获取文件。
+            可直接在线阅读；如果浏览器无法预览，请使用右侧或下方按钮下载文件。
           </p>
         </div>
         <a
@@ -143,12 +146,22 @@ function PdfPreview({ item }: { item: ContentItem }) {
       </div>
       <iframe
         title={`${pdf.label} PDF 预览`}
-        src={href}
-        className="h-[70vh] min-h-[28rem] w-full rounded-md border border-[rgb(var(--border))] bg-white"
+        src={`${href}#toolbar=1&navpanes=0`}
+        className="h-[76vh] min-h-[30rem] w-full rounded-md border border-[rgb(var(--border))] bg-white sm:h-[82vh]"
       />
     </section>
   );
 }
+
+function FileOnlyNotice({ item }: { item: ContentItem }) {
+  return (
+    <div className="rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--panel))] p-6 text-sm leading-7 text-[rgb(var(--muted-foreground))]">
+      这条内容以文件形式发布。请使用下载资料中的链接获取
+      {item.attachments.length ? "附件" : "文件"}。
+    </div>
+  );
+}
+
 function DownloadPanel({ item }: { item: ContentItem }) {
   if (!item.attachments.length) return null;
 
@@ -199,6 +212,9 @@ function DownloadPanel({ item }: { item: ContentItem }) {
 }
 
 export function ContentDetail({ item, previous, next }: ContentDetailProps) {
+  const hasBody = Boolean(item.body.trim());
+  const hasPdf = Boolean(getPreviewablePdf(item));
+
   return (
     <>
       <ProgressBar />
@@ -255,16 +271,13 @@ export function ContentDetail({ item, previous, next }: ContentDetailProps) {
 
           <div className="mt-8 grid min-w-0 gap-8 lg:mt-10 lg:grid-cols-[minmax(0,1fr)_18rem]">
             <div className="min-w-0">
-              {item.body ? (
+              {hasBody ? (
                 <div className="prose prose-neutral max-w-none dark:prose-invert sm:prose-lg prose-headings:scroll-mt-24 prose-headings:tracking-normal prose-p:leading-8 prose-a:no-underline prose-pre:text-sm hover:prose-a:underline">
                   <MdxRenderer source={item.body} />
                 </div>
-              ) : (
-                <div className="rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--panel))] p-6 text-sm leading-7 text-[rgb(var(--muted-foreground))]">
-                  这条内容以文件形式发布。请使用下载资料中的链接获取 PDF、DOCX 或其他附件。
-                </div>
-              )}
-              <PdfPreview item={item} />
+              ) : null}
+              {hasPdf ? <PdfPreview item={item} primary={!hasBody} /> : null}
+              {!hasBody && !hasPdf ? <FileOnlyNotice item={item} /> : null}
               <PrevNext previous={previous} next={next} />
             </div>
             <aside className="order-first space-y-5 lg:order-none lg:sticky lg:top-28 lg:self-start">
@@ -275,15 +288,9 @@ export function ContentDetail({ item, previous, next }: ContentDetailProps) {
           </div>
           <RelatedContent item={item} />
         </article>
-
       </main>
       <CodeCopyEnhancer />
       <BackToTop />
     </>
   );
 }
-
-
-
-
-
